@@ -1,174 +1,186 @@
-import random
-#comparative sudoku or Vergleichssudoku
+from tests import board, size, region_size, sign_board
 
-def solve_puzzle(board, output_board):
-    for i in range(81):
-        top, right, bottom, left = list(board[i])
+def next_cell(cell):
+    return (cell[0], cell[1]+1) if cell[1] < size-1 else (cell[0]+1, 0)
 
-        for j in range(len(output_board[i])):
-            top_num, right_num, bottom_num, left_num = 0, 0, 0, 0
-            top_num = output_board[i-9][j] if i-9 >-1 and i-9 < 81 else top_num
-            right_num = output_board[i+1][j] if i+1 >-1 and i+1 < 81 else right_num
-            bottom_num = output_board[i+9][j] if i+9 >-1 and i+9 < 81 else bottom_num
-            left_num = output_board[i-1][j] if i-1 >-1 and i-1 < 81 else left_num
-            for k in range (1,10):
-                if is_valid(top, right, bottom, left, k, top_num, right_num, bottom_num, left_num):
-                    if output_board[i] is not list:
-                        output_board[i] = k
-                    else:
-                        output_board[i].append(k)
-        for k in range (1,10):
-            if is_valid(top, right, bottom, left, k, top_num, right_num, bottom_num, left_num, i):
-                output_board[i].append(k)
-        if output_board[i] == 0:
-            print("deu problema em i : " + str(i))
+def is_full(board):
+    return all(len(x) == 1 for row in board for x in row)
 
-def is_valid_column(number, output_board, col_num):
-    aux = []
-    for x in range (col_num, 81, 9):
-        aux.append(output_board[x])
-    if number in aux:
+def is_valid(board, size, region_size):
+    # If board is not full, invalid
+    if not is_full(board):
         return False
+    # Check rows
+    for i in range(size):
+        row = [x for x in board[i]]
+        row.sort()
+        for j in range(size-1):
+            if row[j] == row[j+1]:
+                return False
+    # Check columns
+    for i in range(size):
+        column = []
+        for j in range(size):
+            column.append(board[j][i])
+        column.sort()
+        for j in range(size-1):
+            if column[j] == column[j+1]:
+                return False
+    # Check blocks
+    for i in range(0, size, region_size):
+        for j in range(0, size, region_size):
+            regiao = [board[x][y] for x in range(i, i+region_size) for y in range(j, j+region_size)]
+            regiao.sort()
+            for k in range(size-1):
+                if regiao[k] == regiao[k+1]:
+                    return False
+        return True    
+
+def is_placement_valid(board, row, column, value, size, region_size, 
+                       top_num=0, right_num=0, bottom_num=0, left_num=0,
+                       top='.', right='.', bottom='.', left='.'):
+    # Check row
+    for i, element in enumerate(board[row]):
+        if len(element) == 1 and element[0] == value and i != column:
+            return False
+    # Check column
+    for i in range(size):
+        if len(board[i][column]) == 1 and board[i][column][0] == value and i != row:
+            return False
+    # Check blocks
+    region_row = row//region_size
+    region_column = column//region_size
+    for i in range(region_row*region_size, (region_row+1)*region_size):
+        for j in range(region_column*region_size, (region_column+1)*region_size):
+            if len(board[i][j]) == 1 and board[i][j][0] == value and (i, j) != (row, column):
+                return False
+
+    # Check signs
+    print('number: ', value)
+    print(top_num, right_num, bottom_num, left_num)
+    if not sign_valid(top, right, bottom, left, value, top_num, right_num, bottom_num, left_num):
+        print("sign")
+        return False    
     return True
 
-def is_valid_line(number, output_board, line_num):
-    aux = []
-    for x in range (line_num*9, line_num*9+9):
-        aux.append(output_board[x])
-    if number in aux:
-        return False
-    return True
-
-def is_valid_region(number, output_board, reg_num):
-    pass
-
-def is_valid(top, right, bottom, left, number, top_num, right_num, bottom_num, left_num, i, output_board):
+def sign_valid(top, right, bottom, left, number, top_num, right_num, bottom_num, left_num):     
     if top != '.':
         if top == '^' and number <= top_num and top_num != 0:
-            print('top1'+ str(number))
+            print("top", number, top_num)
             return False
         elif top == 'v' and number >= top_num and top_num != 0:
-            print('top2'+ str(number))
+            print("top", number, top_num)
             return False
     if right != '.':
         if right == '<' and number >= right_num and right_num != 0:
-            print('right1'+ str(number))
+            print("right", number, right_num)   
             return False
         elif right == '>' and number <= right_num and right_num != 0:
-            print('right2'+ str(number))
+            print("right", number, right_num)
             return False
     if bottom != '.':
         if bottom == '^' and number >= bottom_num and bottom_num != 0:
-            print('bottom1'+ str(number))
+            print("bottom", number, bottom_num)
             return False
         elif bottom == 'v' and number <= bottom_num and bottom_num != 0:
-            print('bottom2'+ str(number))
+            print("bottom", number, bottom_num)
             return False
     if left != '.':
         if left == '<' and number <= left_num and left_num != 0:
-            print('left1'+ str(number))
+            print("left", number, left_num)
             return False
         elif left == '>' and number >= left_num and left_num != 0:
-            print('left2'+ str(number))
-            return False
-    if not is_valid_column(number, output_board, i%9):
-        return False
-    if not is_valid_line(number, output_board, i/9):
-        return False
-    if not is_valid_region(number, output_board, i):
-        return False
-    return True
-
-def is_solved(output_board):
-    #check rows
-    aux = 0
-    for i in range(9):
-        for j in range(9):
-            aux += output_board[i*9+j]
-        if aux != 45:    
-            return False
-    #check columns
-    aux = 0
-    for i in range(9):
-        for j in range(9):
-            aux += output_board[i+j*9]
-        if aux != 45:    
-            return False
-    #check areas
-    for k in range (9):
-        aux = 0
-        for i in range(3):
-            for j in range(3):
-                aux += output_board[(i*3+k)*9+j] ###############
-        if aux != 45:    
+            print("left", number, left_num)
             return False
     return True
 
-def main():
 
-    board = [ #top, right, bottom, left
-        '.>^.', '.<v>', '.<^.',      '.<^.', '.<v>', '..v<',      '.>^.', '.<^>', '..^<',
-        'v>^.', 'v<v>', 'v.v<',      '^>^.', 'v<^>', 'v.v<',      '^>v.', '^<^>', '^.v<',
-        '^>..', 'v<.>', 'v..<',      '^>..', '^>.>', 'v..>',      'v>..', '^<.>', 'v..<',
+def print_board(board, size):
+    print("--"*size)
+    for i in range(len(board)):
+        for j in range(len(board)):
+            if len(cell:=board[i][j]) > 1:
+                print('□', end=' ')
+            else: print(cell[0], end=' ')
+        print()
+    print("--"*size)
 
-        '.<v.', '.>v<', '..v>',      '.<^.', '.<^<', '..^<',      '.<^.', '.<^<', '..v<',
-        'v<^.', 'v>^<', 'v.v>',      '^<v.', '^<v<', '^.v<',      '^<^.', '^>v<', 'v.^>',
-        '^<..', '^>.<', 'v..>',      'v<..', 'v>.<', 'v..>',      '^<..', 'v<.<', '^..<',
-
-        '.>v.', '.>v>', '..^>',      '.>^.', '.<^>', '..^<',      '.>v.', '.<v>', '..v<',
-        'v>^.', 'v<^>', '^.v<',      '^<^.', '^>v<', '^.v>',      '.>v.', 'v>^<', 'v.^>',
-        '^<..', '^>.<', 'v..>',      '^>..', 'v>.>', 'v..>',      'v<..', '^>.<', '^..>',
-    ]
-
-
-
-    # output_board = [[8],[0],[0],[2],[0],[6],[0],[0],[4],
-    #                 [0],[3],[0],[0],[0],[0],[0],[2],[0],
-    #                 [0],[0],[0],[0],[8],[0],[0],[0],[0],
-    #                 [2],[0],[0],[0],[0],[0],[0],[0],[6],
-    #                 [0],[0],[5],[0],[0],[0],[2],[0],[0],
-    #                 [4],[0],[0],[0],[0],[0],[0],[0],[9],
-    #                 [0],[0],[0],[0],[2],[0],[0],[0],[0],
-    #                 [0],[2],[0],[0],[0],[0],[0],[5],[0],
-    #                 [5],[0],[0],[8],[0],[1],[0],[0],[2],
-    # ]
-
-    output_board = [[x for x in range(1, 10)] * 81]
-
-    output_board[0]  = [8]
-    output_board[3]  = [2]
-    output_board[5]  = [6]
-    output_board[8]  = [4]
-    output_board[10] = [3]
-    output_board[16] = [2]
-    output_board[22] = [8]
-    output_board[27] = [2]
-    output_board[35] = [6]
-    output_board[38] = [5]
-    output_board[42] = [2]
-    output_board[45] = [4]
-    output_board[53] = [9]
-    output_board[58] = [2]
-    output_board[64] = [2]
-    output_board[70] = [5]
-    output_board[72] = [8]
-    output_board[75] = [8]
-    output_board[77] = [1]
-    output_board[80] = [2]
+def pre_process(board, size, region_size):
+        copy = [[x for x in y] for y in board]
+        success = True
+        total = 0
+        while success:
+            total += 1
+            success = False
+            for i in range(size):
+                for j in range(size):
+                    if len(copy[i][j]) == 1:
+                        continue
+                    for k in copy[i][j]:
+                        top_num = right_num = bottom_num = left_num = 0
+                        top = sign_board[i][j][0]
+                        right = sign_board[i][j][1]
+                        bottom = sign_board[i][j][2]
+                        left = sign_board[i][j][3]
+                        #filtra o valor se houver uma casa marcada 
+                        if len(board[i-1][j]) == 1 and i > 0 and sign_board[i-1][j][0] != '.':
+                            top_num = board[i-1][j]
+                        if j != (size-1) and len(board[i][j+1]) == 1 and sign_board[i][j+1][1] != '.':
+                            right_num = board[i][j+1]
+                        if i < size-1 and len(board[i+1][j]) == 1 and sign_board[i+1][j][2] != '.':
+                            bottom_num = board[i+1][j]
+                        if j != size  and len(board[i][j-1]) == 1 and sign_board[i][j-1][3] != '.':
+                            left_num = board[i][j-1]
+                        if not is_placement_valid(copy, i, j, k, size, region_size, top_num, right_num, bottom_num, left_num, top, right, bottom, left):
+                            copy[i][j].remove(k)
+                            success = True
+        return copy
     
-    solve_puzzle(board, output_board)
-    if (is_solved(output_board)):
-        print('is solved\n{}'.format(output_board))
-    # else:
-    #     for _ in range (1000):
-    #         solve_puzzle(board, output_board, True)
-    #         if is_solved(output_board):
-    #             print('is solved\n{}'.format(output_board))
-    #             break
-    #     print(output_board)
-        #print('no solution\n{}'.format(output_board))
+def solve(board, row, column, size, region_size, checks=0):
+    if is_full(board):
+        if is_valid(board, size, region_size):
+            return board, checks
+        return False, checks
+    
+    next_row, next_column = next_cell((row, column))
+    top_num = right_num = bottom_num = left_num = 0
+    top = sign_board[row][column][0]
+    right = sign_board[row][column][1]
+    bottom = sign_board[row][column][2]
+    left = sign_board[row][column][3]
 
-if __name__ == "__main__":
-    main()
+    if len(board[row-1][column]) == 1 and row > 0:
+        top_num = board[row-1][column]
+    # if len(board[row][column+1]) == 1 and (row*size + column)%(size-1) != 0 and sign_board[row][column+1][1] != '.':
+    if column != (size-1) and len(board[row][column+1]) == 1 and sign_board[row][column+1][1] != '.':
+        right_num = board[row][column+1]
+    if row < size-1 and len(board[row+1][column]) == 1 and sign_board[row+1][column][2] != '.':
+        bottom_num = board[row+1][column]
+    if column != size  and len(board[row][column-1]) == 1 and sign_board[row][column-1][3] != '.':
+        left_num = board[row][column-1]
 
+    for i in board[row][column]:
+        copy = [[x for x in y] for y in board]
+        copy[row][column] = [i]
+        checks += 1
+        if not is_placement_valid(copy, row, column, i, size, region_size, top_num, right_num, bottom_num, left_num, top, right, bottom, left):
+            continue
+        if (result := solve(copy, next_row, next_column, size, region_size, checks))[0] != False:
+            return result
+    return False, checks
 
+def print_count_possibilities(board, size):
+    print("--"*size)
+    for i in range(len(board)):
+        for j in range(len(board)):
+            print(len(board[i][j]), end=' ')
+        print()
+    print("--"*size)
+
+new_board, checks = solve(board, 0, 0, size, region_size)
+if new_board != False:
+    print_board(new_board, size)
+else:
+    print("No solution found.")
+
+print("Checks: ", checks)
