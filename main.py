@@ -6,6 +6,56 @@ def next_cell(cell):
 def is_full(board):
     return all(len(x) == 1 for row in board for x in row)
 
+def neighbors_list(board, row, column): #retorna uma lista com os vizinhos
+    top_num = board[row-1][column] if row > 0 else 0
+    right_num = board[row][column+1] if column != (size-1) else 0
+    bottom_num = board[row+1][column] if row < size-1 else 0
+    left_num = board[row][column-1] if column != size else 0
+    neighbors_list = [top_num, right_num, bottom_num, left_num]
+    return neighbors_list
+
+def neighbors(board, row, column):
+    top, right, bottom, left = sign_board[row][column]
+    top_num = right_num = bottom_num = left_num = 0
+
+    if len(board[row][column]) > 1:
+        if row > 0:
+            if top == "v":
+                top_num = max(board[row-1][column])
+            elif top == "^":
+                top_num = min(board[row-1][column])
+        if column != (size-1):
+            if right == "<":
+                right_num = max(board[row][column+1])
+            elif right == ">":
+                right_num = min(board[row][column+1])
+        if row < size-1:
+            if bottom == "^":
+                bottom_num = max(board[row+1][column])
+            elif bottom == "v":
+                bottom_num = min(board[row+1][column])
+        if column != size:
+            if left == ">":
+                left_num = max(board[row][column-1])
+            elif left == "<":
+                left_num = min(board[row][column-1])
+
+    else:
+        if row > 0 and len(board[row-1][column]) == 1:
+            top_num = board[row-1][column][0]
+        if column != (size-1) and len(board[row][column+1]) == 1:
+            right_num = board[row][column+1][0]
+        if row < size-1 and len(board[row+1][column]) == 1:
+            bottom_num = board[row+1][column][0]
+        if column != size  and len(board[row][column-1]) == 1:
+            left_num = board[row][column-1][0]
+
+    return top_num, right_num, bottom_num, left_num
+
+def neighbors_signs(board, row, column):
+    top, right, bottom, left = sign_board[row][column]
+    return top, right, bottom, left
+
 def is_valid(board, size, region_size):
     # If board is not full, invalid
     if not is_full(board):
@@ -29,10 +79,10 @@ def is_valid(board, size, region_size):
     # Check blocks
     for i in range(0, size, region_size):
         for j in range(0, size, region_size):
-            regiao = [board[x][y] for x in range(i, i+region_size) for y in range(j, j+region_size)]
-            regiao.sort()
+            region = [board[x][y] for x in range(i, i+region_size) for y in range(j, j+region_size)]
+            region.sort()
             for k in range(size-1):
-                if regiao[k] == regiao[k+1]:
+                if region[k] == region[k+1]:
                     return False
         return True    
 
@@ -59,6 +109,12 @@ def is_placement_valid(board, row, column, value, size, region_size,
         return False    
     
     return True
+
+def filter(board, number): #a cada celula marcada, filtra as outras possibilidades
+    # Check rows
+    # Check columns
+    # Check blocks
+    pass
 
 def sign_valid(top, right, bottom, left, number, top_num, right_num, bottom_num, left_num):     
     if top != '.' and top_num != 0:
@@ -132,31 +188,8 @@ def pre_process(board, size, region_size):
                     top, right, bottom, left = sign_board[row][column]
                     symbols = top, right, bottom, left
                     
-                    top_num = right_num = bottom_num = left_num = 0
-      
-                    if row > 0:
-                        if top == "v":
-                            top_num = max(board[row-1][column])
-                        elif top == "^":
-                            top_num = min(board[row-1][column])
-                    if column != (size-1):
-                        if right == "<":
-                            right_num = max(board[row][column+1])
-                        elif right == ">":
-                            right_num = min(board[row][column+1])
-                    if row < size-1:
-                        if bottom == "^":
-                            bottom_num = max(board[row+1][column])
-                        elif bottom == "v":
-                            bottom_num = min(board[row+1][column])
-                    if column != size:
-                        if left == ">":
-                            left_num = max(board[row][column-1])
-                        elif left == "<":
-                            left_num = min(board[row][column-1])
-
-                    neighbors = top_num, right_num, bottom_num, left_num
-                    if not is_placement_valid(copy, i, j, k, size, region_size, *neighbors, *symbols):
+                    neighbors_numbers = neighbors(board, row, column)
+                    if not is_placement_valid(copy, i, j, k, size, region_size, *neighbors_numbers, *symbols):
                         copy[i][j].remove(k)
                         success = True
     return copy
@@ -174,18 +207,10 @@ def solve(board, row, column, size, region_size, checks=0, nivel=0):
     top, right, bottom, left = sign_board[row][column]
     symbols = top, right, bottom, left
     
-    top_num = right_num = bottom_num = left_num = 0
-    
-    if row > 0 and len(board[row-1][column]) == 1:
-        top_num = board[row-1][column][0]
-    if column != (size-1) and len(board[row][column+1]) == 1:
-        right_num = board[row][column+1][0]
-    if row < size-1 and len(board[row+1][column]) == 1:
-        bottom_num = board[row+1][column][0]
-    if column != size  and len(board[row][column-1]) == 1:
-        left_num = board[row][column-1][0]
+    neighbors = neighbors_signs(board, row, column)
 
-    neighbors = top_num, right_num, bottom_num, left_num
+    if len(board[row][column]) == 1:
+        return False, checks
 
     # Try possibilities
     for i in board[row][column]:
@@ -205,3 +230,15 @@ def print_count_possibilities(board, size):
             print(len(board[i][j]), end=' ')
         print()
     print("--"*size)
+
+processed = pre_process(board, size, region_size)
+
+new_board, checks = solve(board, 0, 0, size, region_size)
+if new_board != False:
+    print_board(new_board, size)
+else:
+    print("No solution found.")
+
+print("Checks: ", checks)
+print_count_possibilities(processed, size)
+print_board(processed, size)
