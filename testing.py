@@ -9,5 +9,9 @@ def uuh(boa):
 
 print_board(board, size)
 print("Preprocessing...")
+board = vergleisch_preprocess(board, size)
 board = pre_process(board, size, region_size)
 print_board(board, size)
+print_count_possibilities(board, size)
+
+uuh(board)

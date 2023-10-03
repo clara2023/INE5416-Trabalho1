@@ -20,6 +20,15 @@ def neighbors(board, row, column):
     top, right, bottom, left = sign_board[row][column]
     top_num = right_num = bottom_num = left_num = 0
 
+    # if row > 0 and len(board[row-1][column]) == 1:
+    #     top_num = board[row-1][column][0]
+    # if column != (size-1) and len(board[row][column+1]) == 1:
+    #     right_num = board[row][column+1][0]
+    # if row < size-1 and len(board[row+1][column]) == 1:
+    #     bottom_num = board[row+1][column][0]
+    # if column != size and len(board[row][column-1]) == 1:
+    #     left_num = board[row][column-1][0]
+
     if row > 0:
         if top == "v":
             top_num = max(board[row-1][column])
@@ -108,6 +117,13 @@ def filter(board, number): #a cada celula marcada, filtra as outras possibilidad
     pass
 
 def sign_valid(number, top, right, bottom, left, top_num, right_num, bottom_num, left_num):     
+    # if number == 5 and top_num == 7:
+    #     print("****")
+    #     print(top_num, top, number)
+    #     print(number, right, right_num)
+    #     print(bottom_num, bottom, number)
+    #     print(left_num, left, number)
+    #     print("****")
     if top == '^' and top_num != 0 and number <= top_num:
         return False
     if top == 'v' and top_num != 0 and number >= top_num:
@@ -178,7 +194,7 @@ def pre_process(board, size, region_size):
     copy = board_copy(board)
     success = True
     total = 0
-    
+
     while success:
         total += 1
         success = False
@@ -211,11 +227,11 @@ def solve(board, row, column, size, region_size, checks=0, nivel=0):
 
     # Try possibilities
     for i in board[row][column]:
-        copy = board_copy(board)
+        copy = pre_process(board, size, region_size)
         copy[row][column] = [i]
         checks += 1
         # copy = pre_process(copy, size, region_size)
-        if not is_placement_valid(copy, row, column, i, size, region_size, *neighbors_, *symbols):
+        if not is_placement_valid(copy, row, column, i, size, region_size):
             continue
         if (result := solve(copy, next_row, next_column, size, region_size, checks, nivel=nivel+1))[0] != False:
             return result
