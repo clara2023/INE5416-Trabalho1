@@ -1,6 +1,4 @@
-from tests import board, size, region_size, sign_board, is_vergleisch
-
-def next_cell(cell):
+def next_cell(cell, size):
     return (cell[0], cell[1]+1) if cell[1] < size-1 else (cell[0]+1, 0)
 
 def is_full(board):
@@ -8,7 +6,8 @@ def is_full(board):
 
 def board_copy(board): return [[[x for x in cell] for cell in row] for row in board]
 
-def neighbors(board, row, column):
+def neighbors(board, sign_board, row, column):
+    size = len(board)
     top, right, bottom, left = sign_board[row][column]
     top_num = right_num = bottom_num = left_num = 0
 
@@ -35,11 +34,13 @@ def neighbors(board, row, column):
 
     return top_num, right_num, bottom_num, left_num
 
-def neighbors_signs(board, row, column):
+def neighbors_signs(sign_board, row, column):
     top, right, bottom, left = sign_board[row][column]
     return top, right, bottom, left
 
-def is_valid(board, size, region_size):
+def is_valid(board):
+    size = len(board)
+    region_size = int(size**0.5)
     # If board is not full, invalid
     if not is_full(board):
         return False
@@ -69,7 +70,9 @@ def is_valid(board, size, region_size):
                     return False
     return True    
 
-def is_placement_valid(board, row, column, value, size, region_size):
+def is_placement_valid(board, sign_board, row, column, value):
+    size = len(board)
+    region_size = int(size**0.5)
     # Check row
     for i, element in enumerate(board[row]):
         if len(element) == 1 and element[0] == value and i != column:
@@ -87,8 +90,8 @@ def is_placement_valid(board, row, column, value, size, region_size):
                 return False
     # Check signs
     symbols = [x for x in sign_board[row][column]]
-    neighbors_numbers = neighbors(board, row, column)
-    if is_vergleisch and not sign_valid(value, *symbols, *neighbors_numbers):
+    neighbors_numbers = neighbors(board, sign_board, row, column)
+    if not sign_valid(value, *symbols, *neighbors_numbers):
         return False    
     
     return True
@@ -116,7 +119,9 @@ def sign_valid(number, top, right, bottom, left, top_num, right_num, bottom_num,
 
     return True
 
-def print_board(board, size):
+def print_board(board):
+    size = len(board)
+    region_size = int(size**0.5)
     print("-"*(2*size+2))
     for i in range(len(board)):
         for j in range(len(board)):
@@ -146,7 +151,8 @@ def count_pops(top, right, bottom, left):
 
     return pop_front, pop_back
 
-def vergleisch_preprocess(board, size):
+def vergleisch_preprocess(board, sign_board):
+    size = len(board)
     copy = board_copy(board)
     for row in range(size):
         for column in range(size):
@@ -160,7 +166,9 @@ def vergleisch_preprocess(board, size):
                 copy[row][column].pop()
     return copy
 
-def pre_process(board, size, region_size):
+def pre_process(board, sign_board):
+    size = len(board)
+    region_size = int(size**0.5)
     copy = board_copy(board)
     success = True
     total = 0
@@ -173,36 +181,38 @@ def pre_process(board, size, region_size):
                 if len(copy[row][column]) == 1:
                     continue
                 for k in copy[row][column]:
-                    if not is_placement_valid(copy, row, column, k, size, region_size):
+                    if not is_placement_valid(copy, sign_board, row, column, k):
                         copy[row][column].remove(k)
                         success = True
     return copy
 
-def solve(board, row, column, size, region_size, checks=0, nivel=0):
+def solve(board, sign_board, row=0, column=0):
     if is_full(board):
-        if is_valid(board, size, region_size):
-            return board, checks
-        return False, checks
+        if is_valid(board):
+            return board
+        return False
     
     # Next cell
-    next_row, next_column = next_cell((row, column))
+    next_row, next_column = next_cell((row, column), len(board))
 
     if len(board[row][column]) == 0:
-        return False, checks
+        return False
 
     # Try possibilities
     for i in board[row][column]:
-        copy = pre_process(board, size, region_size)
+        copy = pre_process(board, sign_board)
         copy[row][column] = [i]
-        checks += 1
-        # copy = pre_process(copy, size, region_size)
-        if not is_placement_valid(copy, row, column, i, size, region_size):
+        if not is_placement_valid(copy, sign_board, row, column, i):
             continue
-        if (result := solve(copy, next_row, next_column, size, region_size, checks, nivel=nivel+1))[0] != False:
+        result = solve(copy, sign_board, next_row, next_column)
+        if result != False:
             return result
-    return False, checks
+    return False
 
-def print_count_possibilities(board, size):
+def print_count_possibilities(board):
+    size = len(board)
+    region_size = int(size**0.5)
+
     print("-"*(2*size+2))
     for i in range(len(board)):
         for j in range(len(board)):

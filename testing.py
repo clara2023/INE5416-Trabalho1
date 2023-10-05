@@ -1,17 +1,18 @@
+from tests import board, sign_board
 from main import *
 
-def uuh(boa):
-    solved, checks = solve(boa, 0, 0, size, region_size)
+def uuh(board, sign_board):
+    solved = solve(board, sign_board)
     if solved != False:
-        print_board(solved, size)
+        print_board(solved)
     else:
         print("No solutions found!")
 
-print_board(board, size)
+print_board(board)
 print("Preprocessing...")
-board = vergleisch_preprocess(board, size)
-board = pre_process(board, size, region_size)
-print_board(board, size)
-print_count_possibilities(board, size)
+board = vergleisch_preprocess(board, sign_board)
+board = pre_process(board, sign_board)
+print_board(board)
+print_count_possibilities(board)
 
-uuh(board)
+uuh(board, sign_board)
