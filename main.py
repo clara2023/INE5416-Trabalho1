@@ -1,12 +1,13 @@
-def next_cell(cell, size):
+def next_cell(cell: tuple[int, int], size: int) -> tuple[int, int]:
     return (cell[0], cell[1]+1) if cell[1] < size-1 else (cell[0]+1, 0)
 
-def is_full(board):
+def is_full(board: list[list[list[int]]]) -> bool:
     return all(len(x) == 1 for row in board for x in row)
 
-def board_copy(board): return [[[x for x in cell] for cell in row] for row in board]
+def board_copy(board: list[list[list[int]]]) -> list[list[list[int]]]:
+    return [[[x for x in cell] for cell in row] for row in board]
 
-def neighbors(board, sign_board, row, column):
+def neighbors(board: list[list[list[int]]], sign_board: list[list[str]], row: int, column: int) -> tuple[int, int, int, int]:
     size = len(board)
     top, right, bottom, left = sign_board[row][column]
     top_num = right_num = bottom_num = left_num = 0
@@ -34,11 +35,11 @@ def neighbors(board, sign_board, row, column):
 
     return top_num, right_num, bottom_num, left_num
 
-def neighbors_signs(sign_board, row, column):
+def neighbors_signs(sign_board: list[list[str]], row: int, column: int) -> tuple[str, str, str, str]:
     top, right, bottom, left = sign_board[row][column]
     return top, right, bottom, left
 
-def is_valid(board):
+def is_valid(board: list[list[list[int]]]) -> bool:
     size = len(board)
     region_size = int(size**0.5)
     # If board is not full, invalid
@@ -70,7 +71,7 @@ def is_valid(board):
                     return False
     return True    
 
-def is_placement_valid(board, sign_board, row, column, value):
+def is_placement_valid(board: list[list[list[int]]], sign_board: list[list[str]], row: int, column: int, value: int) -> bool:
     size = len(board)
     region_size = int(size**0.5)
     # Check row
@@ -96,7 +97,7 @@ def is_placement_valid(board, sign_board, row, column, value):
     
     return True
 
-def sign_valid(number, top, right, bottom, left, top_num, right_num, bottom_num, left_num):
+def sign_valid(number: int, top: str, right: str, bottom: str, left: str, top_num: int, right_num: int, bottom_num: int, left_num: int) -> bool:
     if top == '^' and top_num != 0 and number <= top_num:
         return False
     if top == 'v' and top_num != 0 and number >= top_num:
@@ -119,7 +120,7 @@ def sign_valid(number, top, right, bottom, left, top_num, right_num, bottom_num,
 
     return True
 
-def print_board(board):
+def print_board(board: list[list[list[int]]]) -> None:
     size = len(board)
     region_size = int(size**0.5)
     print("-"*(2*size+2))
@@ -135,7 +136,7 @@ def print_board(board):
             print()
     print("-"*(2*size+2))
 
-def count_pops(top, right, bottom, left):
+def count_pops(top: str, right: str, bottom: str, left: str) -> tuple[int, int]:
     pop_front = 0
     pop_back = 0
 
@@ -151,7 +152,7 @@ def count_pops(top, right, bottom, left):
 
     return pop_front, pop_back
 
-def vergleisch_preprocess(board, sign_board):
+def vergleisch_preprocess(board: list[list[list[int]]], sign_board: list[list[str]]) -> list[list[list[int]]]:
     size = len(board)
     copy = board_copy(board)
     for row in range(size):
@@ -166,9 +167,8 @@ def vergleisch_preprocess(board, sign_board):
                 copy[row][column].pop()
     return copy
 
-def pre_process(board, sign_board):
+def pre_process(board: list[list[list[int]]], sign_board: list[list[str]]) -> list[list[list[int]]]:
     size = len(board)
-    region_size = int(size**0.5)
     copy = board_copy(board)
     success = True
     total = 0
@@ -186,7 +186,7 @@ def pre_process(board, sign_board):
                         success = True
     return copy
 
-def solve(board, sign_board, row=0, column=0):
+def solve(board: list[list[list[int]]], sign_board: list[list[str]], row: int=0, column: int=0) -> bool | list[list[list[int]]]:
     if is_full(board):
         if is_valid(board):
             return board
@@ -209,7 +209,7 @@ def solve(board, sign_board, row=0, column=0):
             return result
     return False
 
-def print_count_possibilities(board):
+def print_count_possibilities(board: list[list[list[int]]]) -> None:
     size = len(board)
     region_size = int(size**0.5)
 
