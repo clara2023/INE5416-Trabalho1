@@ -8,26 +8,9 @@ def is_full(board):
 
 def board_copy(board): return [[[x for x in cell] for cell in row] for row in board]
 
-def neighbors_list(board, row, column): #retorna uma lista com os vizinhos
-    top_num = board[row-1][column] if row > 0 else 0
-    right_num = board[row][column+1] if column != (size-1) else 0
-    bottom_num = board[row+1][column] if row < size-1 else 0
-    left_num = board[row][column-1] if column != size else 0
-    neighbors_list = [top_num, right_num, bottom_num, left_num]
-    return neighbors_list
-
 def neighbors(board, row, column):
     top, right, bottom, left = sign_board[row][column]
     top_num = right_num = bottom_num = left_num = 0
-
-    # if row > 0 and len(board[row-1][column]) == 1:
-    #     top_num = board[row-1][column][0]
-    # if column != (size-1) and len(board[row][column+1]) == 1:
-    #     right_num = board[row][column+1][0]
-    # if row < size-1 and len(board[row+1][column]) == 1:
-    #     bottom_num = board[row+1][column][0]
-    # if column != size and len(board[row][column-1]) == 1:
-    #     left_num = board[row][column-1][0]
 
     if row > 0:
         if top == "v":
@@ -110,20 +93,7 @@ def is_placement_valid(board, row, column, value, size, region_size):
     
     return True
 
-def filter(board, number): #a cada celula marcada, filtra as outras possibilidades
-    # Check rows
-    # Check columns
-    # Check blocks
-    pass
-
-def sign_valid(number, top, right, bottom, left, top_num, right_num, bottom_num, left_num):     
-    # if number == 5 and top_num == 7:
-    #     print("****")
-    #     print(top_num, top, number)
-    #     print(number, right, right_num)
-    #     print(bottom_num, bottom, number)
-    #     print(left_num, left, number)
-    #     print("****")
+def sign_valid(number, top, right, bottom, left, top_num, right_num, bottom_num, left_num):
     if top == '^' and top_num != 0 and number <= top_num:
         return False
     if top == 'v' and top_num != 0 and number >= top_num:
@@ -216,11 +186,6 @@ def solve(board, row, column, size, region_size, checks=0, nivel=0):
     
     # Next cell
     next_row, next_column = next_cell((row, column))
-    
-    # Neighbors value comparison
-    top, right, bottom, left = sign_board[row][column]
-    symbols = top, right, bottom, left
-    neighbors_ = neighbors(board, row, column)
 
     if len(board[row][column]) == 0:
         return False, checks
