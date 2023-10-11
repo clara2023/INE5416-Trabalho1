@@ -30,5 +30,37 @@ isPlacementValid board row column value size regionSize topNum rightNum bottomNu
         areSignsValid = signValid top right bottom left value topNum rightNum bottomNum leftNum
     in isRowValid && isColumnValid && isRegionValid && areSignsValid
 
+
+--imprime traços
+printCountPossibilities2 :: Int -> IO()
+printCountPossibilities2 size = do
+    putStrLn (replicate (2 * size + 2) '-')
+
+--imprime matriz de possibilidades
+printMatrix :: [[[Int]]] -> IO ()
+printMatrix matrix = mapM_ printLayer matrix
+  where
+    printLayer layer = do
+        printList layer
+        putStrLn ""
+
+    printList list = do
+        mapM_ printCell list
+        
+    printCell cell = do 
+        putStr(show (length cell))
+
+printCountPossibilities :: Int -> [[[Int]]] -> IO()
+printCountPossibilities size board = do 
+    printCountPossibilities2 size
+    printMatrix board
+    printCountPossibilities2 size
+
+make_board :: Int -> [[[Int]]]
+make_board size = replicate size $ replicate size [1..size]
+
+main :: IO ()
 main = do
-  putStrLn ""
+    let size = 9
+        board =  make_board size
+    printCountPossibilities size board
