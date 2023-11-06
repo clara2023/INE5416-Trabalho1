@@ -41,7 +41,8 @@ def neighbors_signs(sign_board: list[list[str]], row: int, column: int) -> tuple
 
 def is_valid(board: list[list[list[int]]]) -> bool:
     size = len(board)
-    region_size = int(size**0.5)
+    region_size_x = int(size**0.5)
+    region_size_y = size // region_size_x
     # If board is not full, invalid
     if not is_full(board):
         return False
@@ -62,9 +63,9 @@ def is_valid(board: list[list[list[int]]]) -> bool:
             if column[j] == column[j+1]:
                 return False
     # Check blocks
-    for i in range(0, size, region_size):
-        for j in range(0, size, region_size):
-            region = [board[x][y] for x in range(i, i+region_size) for y in range(j, j+region_size)]
+    for i in range(0, size, region_size_y):
+        for j in range(0, size, region_size_x):
+            region = [board[x][y] for x in range(i, i+region_size_y) for y in range(j, j+region_size_x)]
             region.sort()
             for k in range(size-1):
                 if region[k] == region[k+1]:
@@ -73,7 +74,8 @@ def is_valid(board: list[list[list[int]]]) -> bool:
 
 def is_placement_valid(board: list[list[list[int]]], sign_board: list[list[str]], row: int, column: int, value: int) -> bool:
     size = len(board)
-    region_size = int(size**0.5)
+    region_size_x = int(size**0.5)
+    region_size_y = size // region_size_x
     # Check row
     for i, element in enumerate(board[row]):
         if len(element) == 1 and element[0] == value and i != column:
@@ -83,10 +85,10 @@ def is_placement_valid(board: list[list[list[int]]], sign_board: list[list[str]]
         if len(board[i][column]) == 1 and board[i][column][0] == value and i != row:
             return False
     # Check blocks
-    region_row = row//region_size
-    region_column = column//region_size
-    for i in range(region_row*region_size, (region_row+1)*region_size):
-        for j in range(region_column*region_size, (region_column+1)*region_size):
+    region_row = row//region_size_y
+    region_column = column//region_size_x
+    for i in range(region_row*region_size_y, (region_row+1)*region_size_y):
+        for j in range(region_column*region_size_x, (region_column+1)*region_size_x):
             if len(board[i][j]) == 1 and board[i][j][0] == value and (i, j) != (row, column):
                 return False
     # Check signs
@@ -122,17 +124,18 @@ def sign_valid(number: int, top: str, right: str, bottom: str, left: str, top_nu
 
 def print_board(board: list[list[list[int]]]) -> None:
     size = len(board)
-    region_size = int(size**0.5)
+    region_size_x = int(size**0.5)
+    region_size_y = size // region_size_x
     print("-"*(2*size+2))
     for i in range(len(board)):
         for j in range(len(board)):
-            if len(cell:=board[i][j]) > 1:
+            if len(cell:=board[i][j]) != 1:
                 print('□', end=' ')
             else: print(cell[0], end=' ')
-            if (j+1)%region_size == 0:
+            if (j+1)%region_size_x == 0:
                 print(' ', end='')
         print()
-        if (i+1)%region_size == 0:
+        if (i+1)%region_size_y == 0:
             print()
     print("-"*(2*size+2))
 
@@ -153,19 +156,17 @@ def count_pops(top: str, right: str, bottom: str, left: str) -> tuple[int, int]:
     return pop_front, pop_back
 
 def vergleisch_preprocess(board: list[list[list[int]]], sign_board: list[list[str]]) -> list[list[list[int]]]:
-    size = len(board)
-    copy = board_copy(board)
-    for row in range(size):
-        for column in range(size):
-            if len(copy[row][column]) != size:
-                continue
-            top, right, bottom, left = sign_board[row][column]
-            pop_front, pop_back = count_pops(top, right, bottom, left)
-            for _ in range(pop_front):
-                copy[row][column].pop(0)
-            for _ in range(pop_back):
-                copy[row][column].pop()
-    return copy
+    def process_cell(cell, pops):
+        if pops[1] == 0:
+            return cell[pops[0]:]
+        return cell[pops[0]:-pops[1]]
+
+    def process_row(row, pops):
+        return [process_cell(cell, pops) for cell, pops in zip(row, pops)]
+
+    pops = [[count_pops(*sign) for sign in row] for row in sign_board]
+    processed_board = [process_row(row, pops) for row, pops in zip(board, pops)]
+    return processed_board
 
 def pre_process(board: list[list[list[int]]], sign_board: list[list[str]]) -> list[list[list[int]]]:
     size = len(board)
@@ -211,15 +212,16 @@ def solve(board: list[list[list[int]]], sign_board: list[list[str]], row: int=0,
 
 def print_count_possibilities(board: list[list[list[int]]]) -> None:
     size = len(board)
-    region_size = int(size**0.5)
+    region_size_x = int(size**0.5)
+    region_size_y = size // region_size_x
 
     print("-"*(2*size+2))
     for i in range(len(board)):
         for j in range(len(board)):
             print(len(board[i][j]), end=' ')
-            if (j+1)%region_size == 0:
+            if (j+1)%region_size_x == 0:
                 print(' ', end='')
         print()
-        if (i+1)%region_size == 0:
+        if (i+1)%region_size_y == 0:
             print()
     print("-"*(2*size+2))
