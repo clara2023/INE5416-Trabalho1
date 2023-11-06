@@ -1,6 +1,19 @@
 import Data.List
 
+type Board = [[[Int]]]
 
+
+-- Função para verificar se o tabuleiro é válido
+isValid :: Board -> Bool
+isValid board =
+    let size = length board
+        regionSize = round (sqrt (fromIntegral size))
+    in isFull board && checkRows board size && checkColumns board size && checkBlocks board size regionSize
+
+
+--ok: ja foram testadas
+
+--testar
 signValid :: Char -> Char -> Char -> Char -> Int -> Int -> Int -> Int -> Int -> Bool
 signValid top right bottom left number topNum rightNum bottomNum leftNum
     | top == '^' && topNum /= 0 && number <= topNum = False
@@ -13,7 +26,7 @@ signValid top right bottom left number topNum rightNum bottomNum leftNum
     | left == '>' && leftNum /= 0 && number >= leftNum = False
     | otherwise = True
 
-
+--testar
 isPlacementValid :: [[[Int]]] -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Char -> Char -> Char -> Char -> Bool
 isPlacementValid board row column value size regionSize topNum rightNum bottomNum leftNum top right bottom left =
     let isRowValid = all (\(i, element) -> length element /= 1 || (element !! 0) /= value || i == column) (zip [0..] (board !! row))
@@ -24,6 +37,7 @@ isPlacementValid board row column value size regionSize topNum rightNum bottomNu
         areSignsValid = signValid top right bottom left value topNum rightNum bottomNum leftNum
     in isRowValid && isColumnValid && isRegionValid && areSignsValid
 
+--ok
 printCountPossibilities :: [[[Int]]] -> IO ()
 printCountPossibilities board = do
     putStrLn "Matriz de possibilidades:"
@@ -52,6 +66,60 @@ boardCopy board = map (map (map id)) board
 isFull :: [[[Int]]] -> Bool
 isFull board = all (\x -> length x == 1) (concat board)
 
+-- Função para verificar se o tabuleiro está cheio
+--eh igual a de cima, as duas foram testadas e funcionam
+--deixei caso alguma das duas dê problema
+
+-- isFull :: Board -> Bool
+-- isFull board = all (\row -> all (\cell -> length cell == 1) row) board
+
+-- Função para verificar numero repetido nas linhas
+--ok
+checkRows :: Board -> Int -> Bool
+checkRows board size = all (\i -> checkRow (sort [x | x <- board !! i])) [0 .. size - 1]
+  where
+    checkRow [] = True
+    checkRow [_] = True
+    checkRow (x:y:xs)
+        | x == y = False
+        | otherwise = checkRow (y:xs)
+
+-- Função para verificar numero repetido nas colunas
+--ok
+checkColumns :: Board -> Int -> Bool
+checkColumns board size = all (\i -> checkColumn (sort [board !! j !! i | j <- [0 .. size - 1]])) [0 .. size - 1]
+  where
+    checkColumn [] = True
+    checkColumn [_] = True
+    checkColumn (x:y:xs)
+        | x == y = False
+        | otherwise = checkColumn (y:xs)
+
+-- Função para verificar numero repetido nos blocos
+--ok
+checkBlocks :: Board -> Int -> Int -> Bool
+checkBlocks board size regionSize = all (\i -> all (\j -> checkBlock (sort [board !! x !! y | x <- [i..i+regionSize-1], y <- [j..j+regionSize-1]])) [0, regionSize .. size - 1]) [0, regionSize .. size - 1]
+  where
+    checkBlock [] = True
+    checkBlock [_] = True
+    checkBlock (x:y:xs)
+        | x == y = False
+        | otherwise = checkBlock (y:xs)
+--ok
+vergleichPreprocess :: [[[Int]]] -> [[String]] -> [[[Int]]]
+vergleichPreprocess board signBoard =
+    let size = length board
+        copy = boardCopy board  -- Copia do tabuleiro original
+        processRow :: [[Int]] -> [(Char, Char, Char, Char)] -> [[Int]]
+        processRow row pops = [processCell cell pop | (cell, pop) <- zip row pops]
+        pops = [[stringToTuple (signBoard !! row !! column) | column <- [0..size-1]] | row <- [0..size-1]]
+        processCell :: [Int] -> (Char, Char, Char, Char) -> [Int]
+        processCell cell (top, right, bottom, left) =
+            let (popFront, popBack) = countPops top right bottom left
+            in drop popFront $ reverse $ drop popBack $ reverse cell
+    in [processRow row rowPops | (row, rowPops) <- zip copy pops]
+
+
 --ok
 neighborsSigns :: [[String]] -> Int -> Int -> (Char, Char, Char, Char)
 neighborsSigns signBoard row column = str
@@ -63,7 +131,7 @@ stringToTuple :: String -> (Char, Char, Char, Char)
 stringToTuple str = (str !! 0, str !! 1, str !! 2, str !! 3)
 
 --verificar linha?
-
+--ok
 nextCell :: (Int, Int) -> Int -> (Int, Int)
 nextCell (row, col) size
     | col < size - 1 = (row, col + 1)
@@ -84,74 +152,25 @@ printSudoku board = do
         mapM_ (\x -> putStr (show (x!!0) ++ " ")) row
         putStrLn "|"
 
--- printSudoku :: [[Int]] -> IO ()
--- printSudoku board = do
---     let numRows = length board
---         numCols = length (head board)
---     putStrLn (horizontalLine numCols)
---     mapM_ (printRow numCols) (zip [0..] board)
---     putStrLn (horizontalLine numCols)
-
---   where
---     horizontalLine :: Int -> String
---     horizontalLine numCols = replicate (4 * numCols + 1) '-'
-
---     printRow :: Int -> (Int, [Int]) -> IO ()
---     printRow numCols (rowIndex, row) = do
---         putStr "| "
---         mapM_ (\(colIndex, cell) -> do
---             putStr (show cell ++ " ")
---             if colIndex `mod` 3 == 2 && colIndex /= numCols - 1
---                 then putStr "| "
---                 else return ()
---             ) (zip [0..] row)
---         putStrLn "|"
 
 --ok
 getCell :: [[[Int]]] -> (Int, Int, Int) -> Int
 getCell board (x, y, z) = (board !! x) !! y !! z
 
-neighbors :: [[[Int]]] -> [[String]] -> Int -> Int -> (Int, Int, Int, Int)
-neighbors board sign_board row column = (top_num, right_num, bottom_num, left_num)
+--ok
+isSizeEqual :: Int -> [cell] -> Bool
+isSizeEqual size list = length list == size
+
+
+--ok
+countPops :: Char -> Char -> Char -> Char -> (Int, Int)
+countPops top right bottom left = (popFront, popBack)
   where
-    size = length board
+    popFront = countSignal '^' top + countSignal '>' right + countSignal 'v' bottom + countSignal '<' left
+    popBack = countSignal 'v' top + countSignal '<' right + countSignal '^' bottom + countSignal '>' left
 
-    top = sign_board !! row !! column
-    right = if column /= size - 1 then sign_board !! row !! (column + 1) else ""
-    bottom = if row < size - 1 then sign_board !! (row + 1) !! column else ""
-    left = if column > 0 then sign_board !! row !! (column - 1) else ""
-
-    top_num =
-      if row > 0
-        then case top of
-          "v" -> maximum (board !! (row - 1) !! column)
-          "^" -> minimum (board !! (row - 1) !! column)
-          _ -> 0
-        else 0
-
-    right_num =
-      if column /= size - 1
-        then case right of
-          "<" -> maximum (board !! row !! (column + 1))
-          ">" -> minimum (board !! row !! (column + 1))
-          _ -> 0
-        else 0
-
-    bottom_num =
-      if row < size - 1
-        then case bottom of
-          "^" -> maximum (board !! (row + 1) !! column)
-          "v" -> minimum (board !! (row + 1) !! column)
-          _ -> 0
-        else 0
-
-    left_num =
-      if column > 0
-        then case left of
-          ">" -> maximum (board !! row !! (column - 1))
-          "<" -> minimum (board !! row !! (column - 1))
-          _ -> 0
-        else 0
+    countSignal :: Char -> Char -> Int
+    countSignal s signal = if signal == s then 1 else 0
 
 
 main :: IO ()
@@ -182,13 +201,19 @@ main = do
                 ["v>^.", "v<^>", "^.v<",      "^<^.", "^>v<", "^.v>",      "v<v.", "v>^<", "v.^>"],
                 ["^<..", "^>.<", "v..>",      "^>..", "v>.>", "v..>",      "v<..", "^>.<", "^..>"]
                 ]
-    printCountPossibilities board
+
+    -- printCountPossibilities board
     -- printMatrix board2
     -- putStrLn (show (isFull board2))
     -- putStrLn (show (isFull board))
     -- putStrLn (show (neighborsSigns sign_board 0 0))
     -- putStrLn (show (nextCell (0, 0) size))
     -- putStrLn (show (getCell board2 (0, 0, 0)))
-    printSudoku board2
-    putStrLn (show (neighbors board2 sign_board 0 0))
+    -- printSudoku board2
+    -- putStrLn (show (neighbors board2 sign_board 2 3))
+    -- putStrLn (show (countPops 'v' '>' 'v' '<'))
+    printCountPossibilities (vergleichPreprocess board sign_board)
+    -- putStrLn (show (isSizeEqual 1 [1]))
+    -- putStrLn (show (isSizeEqual 3 [1, 2]))
+    -- putStrLn (show (isSizeEqual 2 [1, 2]))
 
