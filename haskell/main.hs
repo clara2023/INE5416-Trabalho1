@@ -2,6 +2,34 @@ import Data.List
 
 type Board = [[[Int]]]
 
+--ok: ja foram testadas
+
+--verificar linha?
+--ok
+nextCell :: (Int, Int) -> Int -> (Int, Int)
+nextCell (row, col) size
+    | col < size - 1 = (row, col + 1)
+    | otherwise = (row + 1, 0)
+
+
+--ok
+isFull :: [[[Int]]] -> Bool
+isFull board = all (\x -> length x == 1) (concat board)
+
+
+--ok
+boardCopy :: [[[Int]]] -> [[[Int]]]
+boardCopy [[[]]] = [[[]]]
+boardCopy board = map (map (map id)) board
+
+-- neighbors :: [[[Int]]] -> [[String]] -> Int -> Int -> (Int, Int, Int, Int)
+-- neighbors board sign_board row column = (top_num, right_num, bottom_num, left_num)
+
+--ok
+neighborsSigns :: [[String]] -> Int -> Int -> (Char, Char, Char, Char)
+neighborsSigns signBoard row column = str
+  where
+    str = stringToTuple (show (signBoard !! row !! column))
 
 -- Função para verificar se o tabuleiro é válido
 isValid :: Board -> Bool
@@ -10,68 +38,7 @@ isValid board =
         regionSize = round (sqrt (fromIntegral size))
     in isFull board && checkRows board size && checkColumns board size && checkBlocks board size regionSize
 
-
---ok: ja foram testadas
-
---testar
-signValid :: Char -> Char -> Char -> Char -> Int -> Int -> Int -> Int -> Int -> Bool
-signValid top right bottom left number topNum rightNum bottomNum leftNum
-    | top == '^' && topNum /= 0 && number <= topNum = False
-    | top == 'v' && topNum /= 0 && number >= topNum = False
-    | right == '>' && rightNum /= 0 && number <= rightNum = False
-    | right == '<' && rightNum /= 0 && number >= rightNum = False
-    | bottom == 'v' && bottomNum /= 0 && number <= bottomNum = False
-    | bottom == '^' && bottomNum /= 0 && number >= bottomNum = False
-    | left == '<' && leftNum /= 0 && number <= leftNum = False
-    | left == '>' && leftNum /= 0 && number >= leftNum = False
-    | otherwise = True
-
---testar
-isPlacementValid :: [[[Int]]] -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Char -> Char -> Char -> Char -> Bool
-isPlacementValid board row column value size regionSize topNum rightNum bottomNum leftNum top right bottom left =
-    let isRowValid = all (\(i, element) -> length element /= 1 || (element !! 0) /= value || i == column) (zip [0..] (board !! row))
-        isColumnValid = all (\i -> length (board !! i !! column) /= 1 || (board !! i !! column !! 0) /= value || i == row) [0..size-1]
-        regionRow = row `div` regionSize
-        regionColumn = column `div` regionSize
-        isRegionValid = all (\i -> all (\j -> length (board !! i !! j) /= 1 || (board !! i !! j !! 0) /= value || (i, j) == (row, column)) [regionColumn*regionSize..(regionColumn+1)*regionSize-1]) [regionRow*regionSize..(regionRow+1)*regionSize-1]
-        areSignsValid = signValid top right bottom left value topNum rightNum bottomNum leftNum
-    in isRowValid && isColumnValid && isRegionValid && areSignsValid
-
---ok
-printCountPossibilities :: [[[Int]]] -> IO ()
-printCountPossibilities board = do
-    putStrLn "Matriz de possibilidades:"
-    putStrLn "-------------------------"
-    mapM_ printRow board
-    putStrLn "-------------------------"
-    putStrLn ""
-  where
-    printRow :: [[Int]] -> IO ()
-    printRow row = do
-        putStr "| "
-        mapM_ (\x -> putStr (show (length x) ++ " ")) row
-        putStrLn "|"
-
---ok
-make_board :: Int -> [[[Int]]]
-make_board 0 = [[[]]]
-make_board size = replicate size $ replicate size [1..size]
-
---ok
-boardCopy :: [[[Int]]] -> [[[Int]]]
-boardCopy [[[]]] = [[[]]]
-boardCopy board = map (map (map id)) board
-
---ok
-isFull :: [[[Int]]] -> Bool
-isFull board = all (\x -> length x == 1) (concat board)
-
--- Função para verificar se o tabuleiro está cheio
---eh igual a de cima, as duas foram testadas e funcionam
---deixei caso alguma das duas dê problema
-
--- isFull :: Board -> Bool
--- isFull board = all (\row -> all (\cell -> length cell == 1) row) board
+--checkRows, checkColumns e checkBlocks sao funcoes auxiliares para isValid
 
 -- Função para verificar numero repetido nas linhas
 --ok
@@ -105,6 +72,58 @@ checkBlocks board size regionSize = all (\i -> all (\j -> checkBlock (sort [boar
     checkBlock (x:y:xs)
         | x == y = False
         | otherwise = checkBlock (y:xs)
+
+--testar
+isPlacementValid :: [[[Int]]] -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Char -> Char -> Char -> Char -> Bool
+isPlacementValid board row column value size regionSize topNum rightNum bottomNum leftNum top right bottom left =
+    let isRowValid = all (\(i, element) -> length element /= 1 || (element !! 0) /= value || i == column) (zip [0..] (board !! row))
+        isColumnValid = all (\i -> length (board !! i !! column) /= 1 || (board !! i !! column !! 0) /= value || i == row) [0..size-1]
+        regionRow = row `div` regionSize
+        regionColumn = column `div` regionSize
+        isRegionValid = all (\i -> all (\j -> length (board !! i !! j) /= 1 || (board !! i !! j !! 0) /= value || (i, j) == (row, column)) [regionColumn*regionSize..(regionColumn+1)*regionSize-1]) [regionRow*regionSize..(regionRow+1)*regionSize-1]
+        areSignsValid = signValid top right bottom left value topNum rightNum bottomNum leftNum
+    in isRowValid && isColumnValid && isRegionValid && areSignsValid
+
+
+
+--testar
+signValid :: Char -> Char -> Char -> Char -> Int -> Int -> Int -> Int -> Int -> Bool
+signValid top right bottom left number topNum rightNum bottomNum leftNum
+    | top == '^' && topNum /= 0 && number <= topNum = False
+    | top == 'v' && topNum /= 0 && number >= topNum = False
+    | right == '>' && rightNum /= 0 && number <= rightNum = False
+    | right == '<' && rightNum /= 0 && number >= rightNum = False
+    | bottom == 'v' && bottomNum /= 0 && number <= bottomNum = False
+    | bottom == '^' && bottomNum /= 0 && number >= bottomNum = False
+    | left == '<' && leftNum /= 0 && number <= leftNum = False
+    | left == '>' && leftNum /= 0 && number >= leftNum = False
+    | otherwise = True
+
+--ok
+printBoard :: [[[Int]]] -> IO ()
+printBoard board = do
+    putStrLn "Tabuleiro:"
+    putStrLn "-------------------------"
+    mapM_ printRow board
+    putStrLn "-------------------------"
+    putStrLn ""
+  where
+    printRow :: [[Int]] -> IO ()
+    printRow row = do
+        putStr "| "
+        mapM_ (\x -> putStr (show (x!!0) ++ " ")) row
+        putStrLn "|"
+
+--ok
+countPops :: Char -> Char -> Char -> Char -> (Int, Int)
+countPops top right bottom left = (popFront, popBack)
+  where
+    popFront = countSignal '^' top + countSignal '>' right + countSignal 'v' bottom + countSignal '<' left
+    popBack = countSignal 'v' top + countSignal '<' right + countSignal '^' bottom + countSignal '>' left
+
+    countSignal :: Char -> Char -> Int
+    countSignal s signal = if signal == s then 1 else 0
+
 --ok
 vergleichPreprocess :: [[[Int]]] -> [[String]] -> [[[Int]]]
 vergleichPreprocess board signBoard =
@@ -120,27 +139,14 @@ vergleichPreprocess board signBoard =
     in [processRow row rowPops | (row, rowPops) <- zip copy pops]
 
 
---ok
-neighborsSigns :: [[String]] -> Int -> Int -> (Char, Char, Char, Char)
-neighborsSigns signBoard row column = str
-  where
-    str = stringToTuple (show (signBoard !! row !! column))
+--preProcess :: [[[Int]]] -> [[String]] -> [[[Int]]]
+
+--solve 
 
 --ok
-stringToTuple :: String -> (Char, Char, Char, Char)
-stringToTuple str = (str !! 0, str !! 1, str !! 2, str !! 3)
-
---verificar linha?
---ok
-nextCell :: (Int, Int) -> Int -> (Int, Int)
-nextCell (row, col) size
-    | col < size - 1 = (row, col + 1)
-    | otherwise = (row + 1, 0)
-
---ok
-printSudoku :: [[[Int]]] -> IO ()
-printSudoku board = do
-    putStrLn "Tabuleiro:"
+printCountPossibilities :: [[[Int]]] -> IO ()
+printCountPossibilities board = do
+    putStrLn "Matriz de possibilidades:"
     putStrLn "-------------------------"
     mapM_ printRow board
     putStrLn "-------------------------"
@@ -149,8 +155,32 @@ printSudoku board = do
     printRow :: [[Int]] -> IO ()
     printRow row = do
         putStr "| "
-        mapM_ (\x -> putStr (show (x!!0) ++ " ")) row
+        mapM_ (\x -> putStr (show (length x) ++ " ")) row
         putStrLn "|"
+
+--ok
+make_board :: Int -> [[[Int]]]
+make_board 0 = [[[]]]
+make_board size = replicate size $ replicate size [1..size]
+
+
+-- Função para verificar se o tabuleiro está cheio
+--eh igual a de cima, as duas foram testadas e funcionam
+--deixei caso alguma das duas dê problema
+
+-- isFull :: Board -> Bool
+-- isFull board = all (\row -> all (\cell -> length cell == 1) row) board
+
+
+
+
+
+--ok
+stringToTuple :: String -> (Char, Char, Char, Char)
+stringToTuple str = (str !! 0, str !! 1, str !! 2, str !! 3)
+
+
+
 
 
 --ok
@@ -162,15 +192,6 @@ isSizeEqual :: Int -> [cell] -> Bool
 isSizeEqual size list = length list == size
 
 
---ok
-countPops :: Char -> Char -> Char -> Char -> (Int, Int)
-countPops top right bottom left = (popFront, popBack)
-  where
-    popFront = countSignal '^' top + countSignal '>' right + countSignal 'v' bottom + countSignal '<' left
-    popBack = countSignal 'v' top + countSignal '<' right + countSignal '^' bottom + countSignal '>' left
-
-    countSignal :: Char -> Char -> Int
-    countSignal s signal = if signal == s then 1 else 0
 
 
 main :: IO ()
@@ -209,7 +230,7 @@ main = do
     -- putStrLn (show (neighborsSigns sign_board 0 0))
     -- putStrLn (show (nextCell (0, 0) size))
     -- putStrLn (show (getCell board2 (0, 0, 0)))
-    -- printSudoku board2
+    -- printBoard board2
     -- putStrLn (show (neighbors board2 sign_board 2 3))
     -- putStrLn (show (countPops 'v' '>' 'v' '<'))
     printCountPossibilities (vergleichPreprocess board sign_board)
