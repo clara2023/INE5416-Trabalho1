@@ -130,3 +130,29 @@
                            (nreverse (nthcdr pop-back (nreverse (nthcdr pop-front cell))))))))
     (make-board :cells (loop for row in (board-cells board)
                           collect (process-row row pops)))))
+
+;; Ok
+(defun next-cell (coordinates size)
+  (if (< (cdr coordinates) (- size 1))
+      (cons (car coordinates) (+ (cdr coordinates) 1))
+      (cons (+ (car coordinates) 1) 0)))
+
+;;O símbolo # seguido por um caractere é usado para criar um objeto do tipo caractere em Lisp.
+;; Portanto, #\^ cria um objeto caractere que representa a seta para cima.
+
+;; Ok
+(defun count-pops (top right bottom left)
+  (let ((pop-front (+ (count-signal #\^ top)
+                      (count-signal #\> right)
+                      (count-signal #\v bottom)
+                      (count-signal #\< left)))
+        (pop-back (+ (count-signal #\v top)
+                     (count-signal #\< right)
+                     (count-signal #\^ bottom)
+                     (count-signal #\> left))))
+    (values pop-front pop-back)))
+
+;; Exemplo de uso:
+;; (multiple-value-bind (front back)
+;;     (count-pops #\^ #\< #\^ #\<)
+;;   (format t "Pop Front: ~a, Pop Back: ~a" front back))
