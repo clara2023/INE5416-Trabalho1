@@ -1,3 +1,7 @@
+(defun is-valid (board)
+  (and (is-full board) (check-rows board) (check-columns board) (check-blocks board)))
+
+
 (defun isFull (board)
   (every (lambda (row) (every (lambda (cell) (= (length cell) 1)) row)) board))
 
@@ -44,10 +48,85 @@
                                                        append (loop for y from j to (+ j (- region-size-x 1))
                                                                     collect (nth y (nth x board))))))))))
 
-(check-blocks '((1 2 3 4)
-                (2 3 4 1)
-                (3 4 1 2)
-                (4 1 2 3)))
+;; Ok
+(defun make-board (size)
+  (if (= size 0)
+      (list (list (list)))
+      (loop repeat size
+            collect (loop repeat size
+                          collect (loop for i from 1 to size collect i)))))
+
+;; Ok
+(defun next-cell (position size)
+  (if (< (second position) (- size 1))
+      (cons (first position) (+ (second position) 1))
+      (cons (+ (first position) 1) 0)))
 
 
 
+;; Ok
+(setq sign-board
+      '((".>v." "..v>"   ".>^." "..v>"   ".<^." "..v<")
+        ("v<v." "v.^<"   "^>v." "v.^>"   "^<v." "v.v<")
+        ("v<.." "^..<"   "v>.." "^..>"   "v<.." "v..<")
+
+        (".<^." "..v<"   ".<^." "..v<"   ".>^." "..^>")
+        ("^>v." "v.^>"   "^<^." "v.^<"   "^>^." "^.v>")
+        ("v>.." "^..>"   "^<.." "^..<"   "^>.." "v..>")))
+
+;; Ok
+(defun sign-valid (top right bottom left number top-num right-num bottom-num left-num)
+  (cond
+    ((and (string= top "^") (/= top-num 0) (<= number top-num)) nil)
+    ((and (string= top "v") (/= top-num 0) (>= number top-num)) nil)
+    ((and (string= right ">") (/= right-num 0) (<= number right-num)) nil)
+    ((and (string= right "<") (/= right-num 0) (>= number right-num)) nil)
+    ((and (string= bottom "v") (/= bottom-num 0) (<= number bottom-num)) nil)
+    ((and (string= bottom "^") (/= bottom-num 0) (>= number bottom-num)) nil)
+    ((and (string= left "<") (/= left-num 0) (<= number left-num)) nil)
+    ((and (string= left ">") (/= left-num 0) (>= number left-num)) nil)
+    (t t)))
+
+;; String to tuple não funciona em lisp
+;; A atribuição tem que ser na mão
+
+;; Ok
+(defun neighbors-signs (sign-board row column)
+  (string (elt (elt sign-board row) column)))
+
+;; Ok
+(defun count-pops (top right bottom left)
+  (let* ((pop-front (+ (count-signal "^" top)
+                      (count-signal ">" right)
+                      (count-signal "v" bottom)
+                      (count-signal "<" left)))
+         (pop-back (+ (count-signal "v" top)
+                      (count-signal "<" right)
+                      (count-signal "^" bottom)
+                      (count-signal ">" left))))
+
+    (values pop-front pop-back)))
+
+;; Ok
+(defun count-signal (s signal)
+  (if (string= signal s)
+      1
+      0))
+
+
+;; uuuuuh bruh it kinda works
+(defun vergleich-preprocess (board sign-board)
+  (let* ((size (length board)))
+         (count-pops (loop for row from 0 to (- size 1)
+                    collect (loop for column from 0 to (- size 1)
+                             collect (string-to-tuple (aref (aref (sign-board-signs sign-board) row) column))))
+         (process-row (lambda (row row-pops)
+                        (loop for cell in row
+                           collect (process-cell cell (elt row-pops (length row-pops))))))
+         (process-cell (lambda (cell pop)
+                         (let* ((pop-front-back (count-pops (first pop) (second pop) (third pop) (fourth pop)))
+                                (pop-front (first pop-front-back))
+                                (pop-back (second pop-front-back)))
+                           (nreverse (nthcdr pop-back (nreverse (nthcdr pop-front cell))))))))
+    (make-board :cells (loop for row in (board-cells board)
+                          collect (process-row row pops)))))
