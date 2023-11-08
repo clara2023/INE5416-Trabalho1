@@ -1,53 +1,60 @@
 (defun is-valid (board)
   (and (is-full board) (check-rows board) (check-columns board) (check-blocks board)))
 
-
+;; Ok
 (defun isFull (board)
   (every (lambda (row) (every (lambda (cell) (= (length cell) 1)) row)) board))
 
+;; Ok
+(defun check-zone (zone)
+  (write zone)
+  (terpri)
+  (cond
+    ((null zone) t)
+    ((null (cdr zone)) t)
+    ((eq (car (car zone)) (car (cadr zone))) nil)
+    (t (check-zone (cdr zone)))))
+
+;; Ok
+(defun board-row (board row)
+  (nth row board))
 
 (defun check-rows (board)
-  (let* ((size (length board))
-         (check-row-func #'check-row))
+  (let ((size (length board)))
     (loop for i from 0 to (- size 1)
-       always (funcall check-row-func (nth i board)))))
+          always (check-zone (sort (board-row board i) #'< :key #'car)))))
 
-(defun check-row (row)
-  (let ((sorted-row (sort row #'< :key #'car)))
-    (cond
-     ((null sorted-row) t)
-     ((null (cdr sorted-row)) t)
-     ((equal (first sorted-row) (second sorted-row)) nil)
-     (t (check-row (cdr sorted-row))))))
+;; Ok
+(defun board-column (board column)
+  (loop for row in board
+        collect (nth column row)))
 
 (defun check-columns (board)
   (let ((size (length board)))
-    (defun check-column (column)
-      (cond
-        ((null column) t)
-        ((null (cdr column)) t)
-        ((eq (car column) (cadr column)) nil)
-        (t (check-column (cdr column)))))
-    (every #'check-column
-           (loop for i from 0 to (- size 1)
-                 collect (sort (loop for j from 0 to (- size 1)
-                                     collect (nth j (nth i board))))))))
+    (loop for i from 0 to (- size 1)
+          always (check-zone (sort (board-column board i) #'< :key #'car)))))
 
-(defun check-block (lst)
-  (cond ((null lst) t)
-        ((null (cdr lst)) t)
-        ((eq (car lst) (cadr lst)) nil)
-        (t (check-block (cdr lst)))))
-
-(defun check-blocks (board)
+(defun board-block (board block-x block-y)
   (let* ((size (length board))
-         (region-size-x (floor (sqrt (float size))))
-         (region-size-y (/ size region-size-x)))
-    (loop for i from 0 to (- size 1) by region-size-y
-          always (loop for j from 0 to (- size 1) by region-size-x
-                       always (check-block (sort (loop for x from i to (+ i (- region-size-y 1))
-                                                       append (loop for y from j to (+ j (- region-size-x 1))
-                                                                    collect (nth y (nth x board))))))))))
+         (region-size-x (isqrt size))
+         (region-size-y (truncate size region-size-x))
+         (start-row (* block-y region-size-y))
+         (end-row (+ start-row region-size-y))
+         (start-column (* block-x region-size-x))
+         (end-column (+ start-column region-size-x)))
+    (loop for i from start-row below end-row
+          append (loop for j from start-column below end-column
+                       collect (nth j (nth i board))))))
+
+;; Almost working
+(defun check-blocks (board)
+  (let* (
+    (size (length board))
+    (region-size-x (isqrt size))
+    (region-size-y (truncate size region-size-x)))
+    (loop for i from 0 to (- region-size-x 1)
+          do (loop for j from 0 to (- region-size-y 1)
+                  always (check-zone (sort (board-block board i j) #'< :key #'car))))))
 
 ;; Ok
 (defun make-board (size)
