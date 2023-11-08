@@ -169,3 +169,15 @@
 
     ;; Chama as funções de verificação e retorna o resultado
     (and (check-row) (check-column) (check-block) (check-signs))))))
+
+
+(defun test-is-placement-valid (board sign-board)
+  (let* ((size (length board))
+         (region-size-x (isqrt size))
+         (region-size-y (truncate size region-size-x)))
+    
+    (loop for i from 0 below size do
+      (loop for j from 0 below size do
+        (loop for k from 0 below size do
+          (let ((result (is-placement-valid board sign-board i j k)))
+            (format t "is-placement-valid ~a, ~a, ~a: ~a~%" i j k (if result "True" "False"))))))))
