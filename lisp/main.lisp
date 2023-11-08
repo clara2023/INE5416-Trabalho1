@@ -130,3 +130,42 @@
                            (nreverse (nthcdr pop-back (nreverse (nthcdr pop-front cell))))))))
     (make-board :cells (loop for row in (board-cells board)
                           collect (process-row row pops)))))
+
+(defun is-placement-valid (board sign-board row column value)
+  (let* ((size (length board))
+         (region-size-x (isqrt size))
+         (region-size-y (truncate size region-size-x)))
+
+    ;; Função para verificar a validade da linha
+    (defun check-row ()
+      (loop for i from 0 below size
+            for element = (nth i (nth row board))
+            until (or (and (= (length element) 1) (= (first element) value) (/= i column))))
+
+    ;; Função para verificar a validade da coluna
+    (defun check-column ()
+      (loop for i from 0 below size
+            until (or (and (= (length (nth column (nth i board))) 1) (= (first (nth column (nth i board))) value) (/= i row))))
+
+    ;; Função para verificar a validade do bloco
+    (defun check-block ()
+      (let* ((region-row (truncate row region-size-y))
+             (region-column (truncate column region-size-x))
+             (start-row (* region-row region-size-y))
+             (end-row (+ start-row region-size-y))
+             (start-column (* region-column region-size-x))
+             (end-column (+ start-column region-size-x)))
+        (loop for i from start-row below end-row
+              append (loop for j from start-column below end-column
+                           until (or (and (= (length (nth j (nth i board))) 1) (= (first (nth j (nth i board))) value) (/= (list i j) (list row column))))))))
+
+    ;; Função para verificar a validade dos sinais
+    (defun check-signs ()
+      (let ((symbols (list (elt (elt sign-board row) column)))
+           (neighbors-numbers (neighbors board sign-board row column)))
+        (if (not (sign-valid value (first symbols) (second symbols) (third symbols) (fourth symbols) value (first neighbors-numbers) (second neighbors-numbers) (third neighbors-numbers) (fourth neighbors-numbers)))
+            nil
+            t)))
+
+    ;; Chama as funções de verificação e retorna o resultado
+    (and (check-row) (check-column) (check-block) (check-signs))))))
