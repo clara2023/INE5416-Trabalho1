@@ -108,9 +108,7 @@ make_board 0 = [[[]]]
 make_board size = replicate size $ replicate size [1 .. size]
 
 neighborsSigns :: SignBoard -> Int -> Int -> (Char, Char, Char, Char)
-neighborsSigns signBoard row column = str
-  where
-    str = stringToTuple (show (signBoard !! row !! column))
+neighborsSigns signBoard row column = stringToTuple (show (signBoard !! row !! column))
 
 stringToTuple :: String -> (Char, Char, Char, Char)
 stringToTuple str = (str !! 0, str !! 1, str !! 2, str !! 3)
@@ -271,38 +269,77 @@ neighbors board signBoard row column =
       , updateBottom bottomNum
       , updateLeft leftNum)
 
+printBoard :: Board -> IO ()
+printBoard board = do
+    let size = length board
+        regionSizeX = floor (sqrt (fromIntegral size))
+        regionSizeY = size `div` regionSizeX
+    printBoardRows board size regionSizeX regionSizeY
+
+printBoardRows :: Board -> Int -> Int -> Int -> IO ()
+printBoardRows _ 0 _ _ = return ()
+printBoardRows board size regionSizeX regionSizeY = do
+    printRow (head board) regionSizeX
+    putStrLn ""
+    when ((size-1) `mod` regionSizeY == 0) $ putStrLn ""
+    printBoardRows (tail board) (size - 1) regionSizeX regionSizeY
+
+printRow :: [[Int]] -> Int -> IO ()
+printRow [] _ = return ()
+printRow row regionSizeX = do
+    printCell (head row)
+    when (((length row) -1) `mod` regionSizeX == 0) $ putStr " "
+    printRow (tail row) regionSizeX
+
+printCell :: [Int] -> IO ()
+printCell cell
+    | length cell /= 1 = putStr "□ "
+    | otherwise = putStr (show (head cell) ++ " ")
+
+
+example :: Int -> SignBoard
+example x
+  | x == 1 = [
+  [".<v.", "..^<",    ".<^.", "..v<"],
+  ["v<..", "^..<",    "^>..", "v..>"],
+
+  [".>v.", "..^>",    ".<^.", "..v<"],
+  ["v>..", "^..>",    "^>..", "v..>"]
+            ]
+  | x == 23 = [
+  [".>v.", "..v>",   ".>^.", "..v>",   ".<^.", "..v<"],
+  ["v<v.", "v.^<",   "^>v.", "v.^>",   "^<v.", "v.v<"],
+  ["v<..", "^..<",   "v>..", "^..>",   "v<..", "v..<"],
+
+  [".<^.", "..v<",   ".<^.", "..v<",   ".>^.", "..^>"],
+  ["^>v.", "v.^>",   "^<^.", "v.^<",   "^>^.", "^.v>"],
+  ["v>..", "^..>",   "^<..", "^..<",   "^>..", "v..>"]
+                ]
+  | x == 60 = [
+  [".<v.", ".<v<", "..v<",   ".<^.", ".<^<", "..v<",   ".<^.", ".<v<", "..v<"],
+  ["v<^.", "v<v<", "v.^<",   "^>v.", "^>v>", "v.^>",   "^>^.", "v<^>", "v.v<"],
+  ["^>..", "v<.>", "^..<",   "v>..", "v<.>", "^..<",   "^>..", "^<.>", "v..<"],
+
+  [".<v.", ".>v<", "..^>",   ".<^.", ".>v<", "..^>",   ".<^.", ".>v<", "..^>"],
+  ["v<^.", "v>v<", "^.^>",   "^>v.", "v<v>", "^.v<",   "^>^.", "v<^>", "^.^<"],
+  ["^<..", "v>.<", "^..>",   "v<..", "v>.<", "v..>",   "^>..", "^>.>", "^..>"],
+
+  [".>v.", ".<v>", "..v<",   ".>^.", ".<^>", "..^<",   ".>v.", ".<v>", "..v<"],
+  ["v>^.", "v>^>", "v.^>",   "^<v.", "^>v<", "^.v>",   "v>v.", "v>^>", "v.v>"],
+  ["^<..", "^>.<", "^..>",   "v<..", "v>.<", "v..>",   "v<..", "^>.<", "v..>"]
+              ]
+  | otherwise = example 1
+
 -- Função principal
 main :: IO ()
-main
-    -- let sign_board = [ 
-    --                 [".>v.", ".<v>", "..v<",      ".<^.", ".<v<", "..v<",      ".>^.", ".<^>", "..^<"],
-    --                 ["v>^.", "v<v>", "v.v<",      "^>^.", "v<^>", "v.v<",      "^>v.", "^<^>", "^.v<"],
-    --                 ["^>..", "v<.>", "v..<",      "^>..", "^>.>", "v..>",      "v>..", "^<.>", "v..<"],
-    --                 [".<v.", ".>v<", "..v>",      ".<^.", ".<^<", "..^<",      ".<^.", ".<^<", "..v<"],
-    --                 ["v<^.", "v>^<", "v.v>",      "^<v.", "^<v<", "^.v<",      "^<^.", "^>v<", "v.^>"],
-    --                 ["^<..", "^>.<", "v..>",      "v<..", "v>.<", "v..>",      "^<..", "v<.<", "^..<"],
-    --                 [".>v.", ".>v>", "..^>",      ".>^.", ".<^>", "..^<",      ".>v.", ".<v>", "..v<"],
-    --                 ["v>^.", "v<^>", "^.v<",      "^<^.", "^>v<", "^.v>",      "v<v.", "v>^<", "v.^>"],
-    --                 ["^<..", "^>.<", "v..>",      "^>..", "v>.>", "v..>",      "v<..", "^>.<", "^..>"]
-    --                 ]
-    -- let sign_board = [
-    --             [".<v.", "..^<",    ".<^.", "..v<"],
-    --             ["v<..", "^..<",    "^>..", "v..>"],
-    --             [".>v.", "..^>",    ".<^.", "..v<"],
-    --             ["v>..", "^..>",    "^>..", "v..>"]
-    --             ]
- = do
-  let sign_board =
-        [ [".>v.", "..v>", ".>^.", "..v>", ".<^.", "..v<"]
-        , ["v<v.", "v.^<", "^>v.", "v.^>", "^<v.", "v.v<"]
-        , ["v<..", "^..<", "v>..", "^..>", "v<..", "v..<"]
-        , [".<^.", "..v<", ".<^.", "..v<", ".>^.", "..^>"]
-        , ["^>v.", "v.^>", "^<^.", "v.^<", "^>^.", "^.v>"]
-        , ["v>..", "^..>", "^<..", "^..<", "^>..", "v..>"]
-        ]
-  let burh = length sign_board
-  let new_board = vergleichPreprocess (make_board burh) sign_board
+main = do
+  -- Exemplos: 1, 23, 60
+  -- (2x2), (6x6), (9x9)
+  -- example <n> para escolher um dos tabuleiros
+  let sign_board = example 60
+  
+  let new_board = vergleichPreprocess (make_board (length sign_board)) sign_board
   let possibleResult = solve new_board sign_board 0 0
   case possibleResult of
-    Just result -> print result
+    Just result -> printBoard result
     Nothing -> putStrLn "No solution found"
