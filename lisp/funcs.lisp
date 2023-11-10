@@ -84,12 +84,14 @@
     ((and (string= left ">") (/= left-num 0) (>= number left-num)) nil)
     (t t)))
 
-;; String to tuple não funciona em lisp
-;; A atribuição tem que ser na mão
-
 ;; Ok
 (defun neighbors-signs (sign-board row column)
   (string (elt (elt sign-board row) column)))
+
+;; Ok
+(defun string-to-list (string)
+  (loop for i from 0 below (length string)
+        collect (string (elt string i))))
 
 ;; Ok
 (defun count-pops (top right bottom left)
@@ -102,7 +104,7 @@
                       (count-signal "^" bottom)
                       (count-signal ">" left))))
 
-    (values pop-front pop-back)))
+    (list pop-front pop-back)))
 
 ;; Ok
 (defun count-signal (s signal)
@@ -110,22 +112,24 @@
       1
       0))
 
-;; uuuuuh bruh it kinda works
+;; Ok
+(defun vergleich-cell-process (board sign-board row column)
+  (let* (
+    (neighbor-signs (string-to-list(neighbors-signs sign-board row column)))
+    (pops (apply #'count-pops neighbor-signs))
+    (cell (nth row (nth column board)))
+  )
+  (subseq cell (first pops) (- (length cell) (second pops)))))
+
+;; Ok
+(defun vergleich-row-process (board sign-board row)
+  (loop for i from 0 below (length board)
+        collect (vergleich-cell-process board sign-board row i)))
+
+;; Ok
 (defun vergleich-preprocess (board sign-board)
-  (let* ((size (length board)))
-         (count-pops (loop for row from 0 to (- size 1)
-                    collect (loop for column from 0 to (- size 1)
-                             collect (string-to-tuple (aref (aref (sign-board-signs sign-board) row) column))))
-         (process-row (lambda (row row-pops)
-                        (loop for cell in row
-                           collect (process-cell cell (elt row-pops (length row-pops))))))
-         (process-cell (lambda (cell pop)
-                         (let* ((pop-front-back (count-pops (first pop) (second pop) (third pop) (fourth pop)))
-                                (pop-front (first pop-front-back))
-                                (pop-back (second pop-front-back)))
-                           (nreverse (nthcdr pop-back (nreverse (nthcdr pop-front cell))))))))
-    (make-board :cells (loop for row in (board-cells board)
-                          collect (process-row row pops)))))
+  (loop for i from 0 below (length board)
+        collect (vergleich-row-process board sign-board i)))
 
 (defun is-placement-valid (board sign-board row column value)
   (let* ((size (length board))
