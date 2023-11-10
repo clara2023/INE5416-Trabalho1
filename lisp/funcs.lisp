@@ -34,10 +34,12 @@
     (loop for i from 0 to (- size 1)
           always (check-zone (sort (board-column board i) #'< :key #'car)))))
 
-(defun board-block (board block-x block-y)
+(defun board-block (board block)
   (let* ((size (length board))
          (region-size-x (isqrt size))
          (region-size-y (truncate size region-size-x))
+         (block-x (mod block region-size-x))
+         (block-y (truncate block region-size-y))
          (start-row (* block-y region-size-y))
          (end-row (+ start-row region-size-y))
          (start-column (* block-x region-size-x))
@@ -46,15 +48,14 @@
           append (loop for j from start-column below end-column
                        collect (nth j (nth i board))))))
 
-;; Almost working
+;; Ok
 (defun check-blocks (board)
   (let* (
     (size (length board))
     (region-size-x (isqrt size))
     (region-size-y (truncate size region-size-x)))
-    (loop for i from 0 to (- region-size-x 1)
-          do (loop for j from 0 to (- region-size-y 1)
-                  always (check-zone (sort (board-block board i j) #'< :key #'car))))))
+    (loop for i from 0 to (- size 1)
+          always (check-zone (sort (board-block board i) #'< :key #'car)))))
 
 ;; Ok
 (defun make-board (size)
