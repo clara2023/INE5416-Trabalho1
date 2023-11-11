@@ -1,6 +1,6 @@
 ;; Ok
 (defun is-valid (board sign-board)
-  (and (is-full board) (check-rows board) (check-columns board) (check-blocks board) (check-signs boards sign-board)))
+  (and (is-full board) (check-rows board) (check-columns board) (check-blocks board)))
 
 ;; Ok
 (defun is-full (board)
@@ -57,21 +57,27 @@
     (loop for i from 0 to (- size 1)
           always (check-zone (sort (board-block board i) #'< :key #'car)))))
 
-(defun check-signs board sign-board
-  (let ((size (length board)))
-    (loop for i from 0 to (- size 1)
-          always (check-signs-row board sign-board i))))
-
-(defun check-signs-row board sign-board row
-  (let ((size (length board)))
-    (loop for i from 0 to (- size 1)
-          always (check-signs-cell board sign-board row i))))
-
-;; Not ok
-(defun check-signs-cell board sign-board row column
-  (let* ((size (length board)))
-    (loop for i from 0 to (- size 1)
-          always (sign-valid ))))
+;; Ok
+(defun check-signs-cell (board sign-board row column)
+  (let* (
+    (size (length board))
+    (neighbor-signs (string-to-list(neighbors-signs sign-board row column)))
+    (neighbor-numbers (neighbors-numbers board row column))
+    (top (first neighbor-signs))
+    (right (second neighbor-signs))
+    (bottom (third neighbor-signs))
+    (left (fourth neighbor-signs))
+    (number (nth row (nth column board)))
+    (top-num (first neighbor-numbers))
+    (right-num (second neighbor-numbers))
+    (bottom-num (third neighbor-numbers))
+    (left-num (fourth neighbor-numbers))
+  )
+  (if (= (length number) 1)
+    (sign-valid top right bottom left (car number) top-num right-num bottom-num left-num)
+    "Bruh"
+  )
+  ))
 
 ;; Ok
 (defun make-board (size)
@@ -103,6 +109,16 @@
 ;; Ok
 (defun neighbors-signs (sign-board row column)
   (string (elt (elt sign-board row) column)))
+
+;; Ok
+(defun neighbors-numbers (board row column)
+  (let* (
+    (top (if (= row 0) 0 (if (= (length (nth column (nth row board))) 1) (first (nth column (nth (- row 1) board))) 0)))
+    (right (if (= column (- (length board) 1)) 0 (if (= (length (nth column (nth row board))) 1) (first (nth (+ column 1) (nth row board))) 0)))
+    (bottom (if (= row (- (length board) 1)) 0 (if (= (length (nth column (nth row board))) 1) (first (nth column (nth (+ row 1) board))) 0)))
+    (left (if (= column 0) 0 (if (= (length (nth column (nth row board))) 1) (first (nth (- column 1) (nth row board))) 0)))
+  )
+  (list top right bottom left)))
 
 ;; Ok
 (defun string-to-list (string)
