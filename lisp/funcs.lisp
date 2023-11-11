@@ -75,9 +75,13 @@
   )
   (if (= (length number) 1)
     (sign-valid top right bottom left (car number) top-num right-num bottom-num left-num)
-    "Bruh"
+    t
   )
-  ))
+))
+
+(defun check-signs-row (board sign-board row)
+  (loop for i from 0 below (length board)
+        always (check-signs-cell board sign-board row i)))
 
 ;; Ok
 (defun make-board (size)

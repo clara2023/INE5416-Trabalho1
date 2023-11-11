@@ -1,7 +1,7 @@
 (load "funcs.lisp")
 
 ;; Ok
-(setq sign-board
+(setq sign-board2
       '((".>v." "..v>"   ".>^." "..v>"   ".<^." "..v<")
         ("v<v." "v.^<"   "^>v." "v.^>"   "^<v." "v.v<")
         ("v<.." "^..<"   "v>.." "^..>"   "v<.." "v..<")
@@ -9,6 +9,16 @@
         (".<^." "..v<"   ".<^." "..v<"   ".>^." "..^>")
         ("^>v." "v.^>"   "^<^." "v.^<"   "^>^." "^.v>")
         ("v>.." "^..>"   "^<.." "^..<"   "^>.." "v..>")))
+
+(setq sign-board
+  '(
+    (".<v." "..^<"    ".<^." "..v<")
+    ("v<.." "^..<"    "^>.." "v..>")
+
+    (".>v." "..^>"    ".<^." "..v<")
+    ("v>.." "^..>"    "^>.." "v..>")
+  )
+)
 
 ;; OK
 (setq board
@@ -19,6 +29,5 @@
   )
 )
 
-;; (write (board-block board 0 1))
-(write (check-blocks board))
-;; (write (check-zone (board-block board 1 2)))
+; (write (check-signs-row board sign-board 0))
+(write (check-signs-cell board sign-board 0 1))
