@@ -1,14 +1,13 @@
+;; Ok
 (defun is-valid (board)
   (and (is-full board) (check-rows board) (check-columns board) (check-blocks board)))
 
 ;; Ok
-(defun isFull (board)
+(defun is-full (board)
   (every (lambda (row) (every (lambda (cell) (= (length cell) 1)) row)) board))
 
 ;; Ok
 (defun check-zone (zone)
-  (write zone)
-  (terpri)
   (cond
     ((null zone) t)
     ((null (cdr zone)) t)
@@ -17,7 +16,8 @@
 
 ;; Ok
 (defun board-row (board row)
-  (nth row board))
+  ;; return a copy of the row
+  (copy-list (nth row board)))
 
 (defun check-rows (board)
   (let ((size (length board)))
