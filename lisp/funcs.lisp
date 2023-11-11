@@ -1,6 +1,6 @@
 ;; Ok
-(defun is-valid (board)
-  (and (is-full board) (check-rows board) (check-columns board) (check-blocks board)))
+(defun is-valid (board sign-board)
+  (and (is-full board) (check-rows board) (check-columns board) (check-blocks board) (check-signs boards sign-board)))
 
 ;; Ok
 (defun is-full (board)
@@ -56,6 +56,22 @@
     (region-size-y (truncate size region-size-x)))
     (loop for i from 0 to (- size 1)
           always (check-zone (sort (board-block board i) #'< :key #'car)))))
+
+(defun check-signs board sign-board
+  (let ((size (length board)))
+    (loop for i from 0 to (- size 1)
+          always (check-signs-row board sign-board i))))
+
+(defun check-signs-row board sign-board row
+  (let ((size (length board)))
+    (loop for i from 0 to (- size 1)
+          always (check-signs-cell board sign-board row i))))
+
+;; Not ok
+(defun check-signs-cell board sign-board row column
+  (let* ((size (length board)))
+    (loop for i from 0 to (- size 1)
+          always (sign-valid ))))
 
 ;; Ok
 (defun make-board (size)
