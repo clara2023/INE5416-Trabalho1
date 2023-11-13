@@ -30,4 +30,4 @@
 )
 
 ; (write (check-signs-row board sign-board 0))
-(write (check-signs-cell board sign-board 0 1))
+(write (is-valid board sign-board))

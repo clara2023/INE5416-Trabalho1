@@ -1,6 +1,6 @@
 ;; Ok
 (defun is-valid (board sign-board)
-  (and (is-full board) (check-rows board) (check-columns board) (check-blocks board)))
+  (and (is-full board) (check-rows board) (check-columns board) (check-blocks board) (check-signs board sign-board)))
 
 ;; Ok
 (defun is-full (board)
@@ -67,7 +67,7 @@
     (right (second neighbor-signs))
     (bottom (third neighbor-signs))
     (left (fourth neighbor-signs))
-    (number (nth row (nth column board)))
+    (number (nth column (nth row board)))
     (top-num (first neighbor-numbers))
     (right-num (second neighbor-numbers))
     (bottom-num (third neighbor-numbers))
@@ -82,6 +82,10 @@
 (defun check-signs-row (board sign-board row)
   (loop for i from 0 below (length board)
         always (check-signs-cell board sign-board row i)))
+
+(defun check-signs (board sign-board)
+  (loop for i from 0 below (length board)
+        always (check-signs-row board sign-board i)))
 
 ;; Ok
 (defun make-board (size)
@@ -99,6 +103,7 @@
 
 ;; Ok
 (defun sign-valid (top right bottom left number top-num right-num bottom-num left-num)
+  ; (write (list number top-num right-num bottom-num left-num))
   (cond
     ((and (string= top "^") (/= top-num 0) (<= number top-num)) nil)
     ((and (string= top "v") (/= top-num 0) (>= number top-num)) nil)
