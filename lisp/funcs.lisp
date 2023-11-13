@@ -245,6 +245,32 @@
                               do (format t "~a " element))
                         (format t "~%"))))))
 
-(defun print-board (board)
-  (loop for i in board
-        do (format t "~a~%" i)))
+(defun print-board (board value)
+  (let* ((size (length board))
+         (region-size-x (floor (sqrt size)))
+         (region-size-y (truncate size region-size-x)))
+    (print-board-rows board size region-size-x region-size-y value)))
+
+(defun print-board-rows (board size region-size-x region-size-y value)
+  (if (= size 0)
+      (return-from print-board-rows))
+  (print-row (car board) region-size-x value)
+  (format t "~%")
+  (when (= (mod (- size 1) region-size-y) 0)
+    (format t "~%"))
+  (print-board-rows (cdr board) (- size 1) region-size-x region-size-y value))
+
+(defun print-row (row region-size-x value)
+  (if (endp row)
+      (return-from print-row))
+  (print-cell (car row) value)
+  (when (= (mod (- (length row) 1) region-size-x) 0)
+    (princ " "))
+  (print-row (cdr row) region-size-x value))
+
+(defun print-cell (cell value)
+  (if value
+    (if (not (= (length cell) 1))
+        (princ "□ ")
+        (princ (format nil "~a " (first cell))))
+    (princ (format nil "~a " (length cell)))))
