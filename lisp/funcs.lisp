@@ -234,3 +234,17 @@
         (loop for k from 1 below size do
           (let ((result (is-placement-valid board sign-board i j k)))
             (format t "is-placement-valid ~a, ~a, ~a: ~a~%" i j k (if result "True" "False"))))))))
+
+(defun print-possibilities (board)
+  (loop for i from 0 below (length board)
+        do (progn
+             (format t "Layer ~a:~%" i)
+             (loop for row in (nth i board)
+                   do (progn
+                        (loop for element in row
+                              do (format t "~a " element))
+                        (format t "~%"))))))
+
+(defun print-board (board)
+  (loop for i in board
+        do (format t "~a~%" i)))
