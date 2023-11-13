@@ -167,44 +167,57 @@
   (loop for i from 0 below (length board)
         collect (vergleich-row-process board sign-board i)))
 
+       
+(defun check-row-placement (board row column value)
+  (loop for i from 0 to (1- (length (nth row board)))
+        for element = (nth i (nth row board))
+        when (and (= (length element) 1) (= (first element) value) (not (= i column)))
+        return nil
+        finally (return t)))
+
+(defun check-column-placement (board row column value)
+  (let ((size (length board)))
+    (loop for i from 0 to (1- size)
+          for element = (nth column (nth i board))
+          when (and (= (length element) 1) (= (first element) value) (not (= i row)))
+          return nil
+          finally (return t))))
+
+
+;;Ok acho
+(defun check-block-placement (board row column value)
+  (let* ((size (length board))
+         (region-size-x (isqrt size))
+         (region-size-y (floor size region-size-x))
+         (region-row (floor row region-size-y))
+         (region-column (floor column region-size-x)))
+    ;; Check blocks
+    (loop for i from (* region-row region-size-y) below (* (1+ region-row) region-size-y)
+          do (loop for j from (* region-column region-size-x) below (* (1+ region-column) region-size-x)
+                   do (if (and (= (length (nth i board)) 1)
+                                (= (nth 0 (nth i board)) value)
+                                (not (and (= i row) (= j column))))
+                          (return-from check-block-placement nil))))
+    t))
+
+
+(defun check-signs-placement (board sign-board row column value)
+  (let* ((symbols (string-to-list (nth column (nth row sign-board))))
+         (neighbors-numbers (neighbors-numbers board row column)))
+    (if (not (sign-valid  (nth 0 symbols) (nth 1 symbols) (nth 2 symbols) (nth 3 symbols) value
+                               (nth 0 neighbors-numbers) (nth 1 neighbors-numbers)
+                               (nth 2 neighbors-numbers) (nth 3 neighbors-numbers)))
+        nil
+        t)))
+
 (defun is-placement-valid (board sign-board row column value)
   (let* ((size (length board))
          (region-size-x (isqrt size))
          (region-size-y (truncate size region-size-x)))
-
-    ;; Função para verificar a validade da linha
-    (defun check-row ()
-      (loop for i from 0 below size
-            for element = (nth i (nth row board))
-            until (or (and (= (length element) 1) (= (first element) value) (/= i column))))
-
-    ;; Função para verificar a validade da coluna
-    (defun check-column ()
-      (loop for i from 0 below size
-            until (or (and (= (length (nth column (nth i board))) 1) (= (first (nth column (nth i board))) value) (/= i row))))
-
-    ;; Função para verificar a validade do bloco
-    (defun check-block ()
-      (let* ((region-row (truncate row region-size-y))
-             (region-column (truncate column region-size-x))
-             (start-row (* region-row region-size-y))
-             (end-row (+ start-row region-size-y))
-             (start-column (* region-column region-size-x))
-             (end-column (+ start-column region-size-x)))
-        (loop for i from start-row below end-row
-              append (loop for j from start-column below end-column
-                           until (or (and (= (length (nth j (nth i board))) 1) (= (first (nth j (nth i board))) value) (/= (list i j) (list row column))))))))
-
-    ;; Função para verificar a validade dos sinais
-    (defun check-signs ()
-      (let ((symbols (list (elt (elt sign-board row) column)))
-           (neighbors-numbers (neighbors board sign-board row column)))
-        (if (not (sign-valid value (first symbols) (second symbols) (third symbols) (fourth symbols) value (first neighbors-numbers) (second neighbors-numbers) (third neighbors-numbers) (fourth neighbors-numbers)))
-            nil
-            t)))
-
-    ;; Chama as funções de verificação e retorna o resultado
-    (and (check-row) (check-column) (check-block) (check-signs))))))
+    (and (check-row-placement board row column value)
+         (check-column-placement board row column value)
+         (check-block-placement board row column value)
+         (check-signs-placement board sign-board row column value))))
 
 (defun test-is-placement-valid (board sign-board)
   (let* ((size (length board))
@@ -213,6 +226,6 @@
     
     (loop for i from 0 below size do
       (loop for j from 0 below size do
-        (loop for k from 0 below size do
+        (loop for k from 1 below size do
           (let ((result (is-placement-valid board sign-board i j k)))
             (format t "is-placement-valid ~a, ~a, ~a: ~a~%" i j k (if result "True" "False"))))))))
