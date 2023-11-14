@@ -334,3 +334,25 @@
   (loop for row in board
         collect (loop for element in row
                       collect element)))
+
+
+(defun pre-process (board sign-board)
+  (let* ((size (length board))
+         (copy (copia board))
+         (success t)
+         (total 0))
+    (loop while success do
+          (setq total (+ total 1)
+                success nil)
+          (loop for row below size do
+                (loop for column below size do
+                      (if (eql 1 (length (nth row (nth column copy))))
+                          (continue))
+                      (loop for k in (nth row (nth column copy)) do
+                            (if (not (is-placement-valid copy sign-board row column k))
+                                (progn
+                                  (setf (nth row (nth column copy)) (remove k (nth row (nth column copy)))
+                                        success t)))))))
+    copy))
+
+
