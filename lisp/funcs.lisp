@@ -208,12 +208,19 @@
 
 (defun check-signs-placement (board sign-board row column value)
   (let* ((symbols (string-to-list (nth column (nth row sign-board))))
-         (neighbors-numbers (neighbors-numbers board row column)))
-    (if (not (sign-valid  (nth 0 symbols) (nth 1 symbols) (nth 2 symbols) (nth 3 symbols) value
-                               (nth 0 neighbors-numbers) (nth 1 neighbors-numbers)
-                               (nth 2 neighbors-numbers) (nth 3 neighbors-numbers)))
+         (neighbors-n (neighbors-numbers board row column))
+         (signs-to-sign-valid (string-to-list-of-strings symbols)))
+
+    ;(format t "type of symbols ~a~%" (type-of (nth 0 signs-to-sign-valid)))
+    (if (not (sign-valid 
+                         (nth 0 signs-to-sign-valid) (nth 1 signs-to-sign-valid) (nth 2 signs-to-sign-valid) (nth 3 signs-to-sign-valid) value
+                         (nth 0 neighbors-n) (nth 1 neighbors-n) (nth 2 neighbors-n) (nth 3 neighbors-n)))
         nil
         t)))
+
+(defun string-to-list-of-strings (input-string)
+  "Converte uma string em uma lista de strings, onde cada string contém um caractere da string original."
+  (mapcar #'string (coerce input-string 'list)))
 
 (defun is-placement-valid (board sign-board row column value)
   (let* ((size (length board))
@@ -274,3 +281,16 @@
         (princ "□ ")
         (princ (format nil "~a " (first cell))))
     (princ (format nil "~a " (length cell)))))
+
+
+(defun is-placement-valid (board sign-board row column value)
+  (let* ((size (length board))
+         (region-size-x (isqrt size))
+         (region-size-y (truncate size region-size-x)))
+    (and (check-row-placement board row column value)
+         (check-column-placement board row column value)
+         (check-block-placement board row column value)
+         (check-signs-placement board sign-board row column value))))
+
+
+
