@@ -97,9 +97,9 @@
 
 ;; Ok
 (defun next-cell (position size)
-  (if (< (second position) (- size 1))
-      (cons (first position) (+ (second position) 1))
-      (cons (+ (first position) 1) 0)))
+  (if (= (cadr position) (1- size))
+      (list (1+ (car position)) 0)
+      (list (car position) (1+ (cadr position)))))
 
 ;; Ok
 (defun sign-valid (top right bottom left number top-num right-num bottom-num left-num)
@@ -223,6 +223,7 @@
   (mapcar #'string (coerce input-string 'list)))
 
 (defun is-placement-valid (board sign-board row column value)
+  (format t "is-placement-valid ~a, ~a, ~a~%" row column value)
   (let* ((size (length board))
          (region-size-x (isqrt size))
          (region-size-y (truncate size region-size-x)))
@@ -252,6 +253,7 @@
                               do (format t "~a " element))
                         (format t "~%"))))))
 
+;; Ok
 (defun print-board (board value)
   (let* ((size (length board))
          (region-size-x (floor (sqrt size)))
@@ -282,7 +284,6 @@
         (princ (format nil "~a " (first cell))))
     (princ (format nil "~a " (length cell)))))
 
-
 (defun is-placement-valid (board sign-board row column value)
   (let* ((size (length board))
          (region-size-x (isqrt size))
@@ -292,5 +293,44 @@
          (check-block-placement board row column value)
          (check-signs-placement board sign-board row column value))))
 
+(defun replace-cell (matrix row column new-value)
+  (setf (nth column (nth row matrix)) new-value))
 
+(defun solve (board sign-board &optional (row 0) (column 0))
+  (if (is-full board)
+      (if (is-valid board sign-board)
+          board
+          nil
+          )
+      (let* ((next-cell (next-cell (list row column) (length board)))
+            (next-row (car next-cell))
+            (next-column (cadr next-cell)))
+        (if (= (length (nth column (nth row board))) 0)
+            nil
+            (loop for i in (nth column (nth row board))
+                  do (let ((copy (copia board)))
+                      (if (is-placement-valid copy sign-board row column i)
+                          (progn
+                            (replace-cell copy row column (list i))
+                            (let ((result (solve copy sign-board next-row next-column)))
+                              (if result
+                                  (return-from solve result)
+                                  nil
+                                  )
+                              )
+                            )
+                          nil
+                          )
+                      ; (setf (nth column (nth row copy)) (list i))
+                      ; (let ((result (solve copy sign-board next-row next-column)))
+                      ;   (if result
+                      ;       (return-from solve result)
+                      ;       nil
+                      ;       ))
+                            
+                            ))))))
 
+(defun copia (board)
+  (loop for row in board
+        collect (loop for element in row
+                      collect element)))
