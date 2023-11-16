@@ -105,6 +105,7 @@
 (defun sign-valid (top right bottom left number top-num right-num bottom-num left-num)
   ; (write (list number top-num right-num bottom-num left-num))
   (cond
+    ((not (and top-num right-num left-num bottom-num)) nil)
     ((and (string= top "^") (/= top-num 0) (<= number top-num)) nil)
     ((and (string= top "v") (/= top-num 0) (>= number top-num)) nil)
     ((and (string= right ">") (/= right-num 0) (<= number right-num)) nil)
@@ -156,7 +157,8 @@
       )
       ))
   )
-  (list top right bottom left)))
+  (list top right bottom left)
+  ))
 
 ;; Ok
 (defun string-to-list (string)
@@ -218,7 +220,7 @@
           finally (return t))))
 
 
-;;Ok acho
+;; Ok acho
 (defun check-block-placement (board row column value)
   (let* ((size (length board))
          (region-size-x (isqrt size))
@@ -319,7 +321,7 @@
     (princ (format nil "~a " (length cell)))))
 
 (defun is-placement-valid (board sign-board row column value)
-  (let* ((size (length board))
+   (let* ((size (length board))
          (region-size-x (isqrt size))
          (region-size-y (truncate size region-size-x)))
     (and (check-row-placement board row column value)
@@ -342,7 +344,7 @@
         (if (= (length (nth column (nth row board))) 0)
             nil
             (loop for i in (nth column (nth row board))
-                  do (let ((copy (copia board)))
+                  do (let ((copy (pre-process board sign-board)))
                       (if (is-placement-valid copy sign-board row column i)
                           (progn
                             (replace-cell copy row column (list i))
@@ -380,6 +382,8 @@
                                   (setf (nth column (nth row copy)) (remove k (nth column (nth row copy)))
                                         success t)
                                         ))))))
-    copy))
+    ; (format t "Total: ~a~%" total)
+    copy
+    ))
 
 
