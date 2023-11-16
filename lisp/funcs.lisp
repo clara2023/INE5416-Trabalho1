@@ -62,7 +62,7 @@
   (let* (
     (size (length board))
     (neighbor-signs (string-to-list(neighbors-signs sign-board row column)))
-    (neighbor-numbers (neighbors-numbers board row column))
+    (neighbor-numbers (neighbors-numbers board sign-board row column))
     (top (first neighbor-signs))
     (right (second neighbor-signs))
     (bottom (third neighbor-signs))
@@ -120,12 +120,41 @@
   (string (elt (elt sign-board row) column)))
 
 ;; Ok
-(defun neighbors-numbers (board row column)
+(defun neighbors-numbers (board sign-board row column)
   (let* (
-    (top (if (= row 0) 0 (if (= (length (nth column (nth row board))) 1) (first (nth column (nth (- row 1) board))) 0)))
-    (right (if (= column (- (length board) 1)) 0 (if (= (length (nth column (nth row board))) 1) (first (nth (+ column 1) (nth row board))) 0)))
-    (bottom (if (= row (- (length board) 1)) 0 (if (= (length (nth column (nth row board))) 1) (first (nth column (nth (+ row 1) board))) 0)))
-    (left (if (= column 0) 0 (if (= (length (nth column (nth row board))) 1) (first (nth (- column 1) (nth row board))) 0)))
+    (signs (string-to-list(neighbors-signs sign-board row column)))
+    (top-sign (first signs))
+    (right-sign (second signs))
+    (bottom-sign (third signs))
+    (left-sign (fourth signs))
+    (top (if (or (= row 0) (string= top-sign "."))
+      0
+      (if (string= top-sign "^")
+          (car (nth column (nth (- row 1) board)))
+          (car(last (nth column (nth (- row 1) board))))
+      )
+      ))
+    (right (if (or (= column (- (length board) 1)) (string= right-sign "."))
+      0
+      (if (string= right-sign ">")
+          (car (nth (+ column 1) (nth row board)))
+          (car(last (nth (+ column 1) (nth row board))))
+      )
+      ))
+    (bottom (if (or (= row (- (length board) 1)) (string= bottom-sign "."))
+      0
+      (if (string= bottom-sign "v")
+          (car (nth column (nth (+ row 1) board)))
+          (car(last (nth column (nth (+ row 1) board))))
+      )
+      ))
+    (left (if (or (= column 0) (string= left-sign "."))
+      0
+      (if (string= left-sign "<")
+          (car (nth (- column 1) (nth row board)))
+          (car(last (nth (- column 1) (nth row board))))
+      )
+      ))
   )
   (list top right bottom left)))
 
@@ -211,7 +240,7 @@
 
 (defun check-signs-placement (board sign-board row column value)
   (let* ((symbols (string-to-list (nth column (nth row sign-board))))
-         (neighbors-n (neighbors-numbers board row column))
+         (neighbors-n (neighbors-numbers board sign-board row column))
          (signs-to-sign-valid (string-to-list-of-strings symbols)))
 
     ;(format t "type of symbols ~a~%" (type-of (nth 0 signs-to-sign-valid)))

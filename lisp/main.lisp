@@ -1,7 +1,7 @@
 (load "funcs.lisp")
 (load "boards.lisp")
 
-(defvar example-size 6)
+(defvar example-size 9)
 
 (setq sign-board (if (= example-size 9) sign-board-60 (if (= example-size 6 ) sign-board-23 sign-board-1)))
 
