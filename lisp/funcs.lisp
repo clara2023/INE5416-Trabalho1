@@ -199,10 +199,13 @@
     ;; Check blocks
     (loop for i from (* region-row region-size-y) below (* (1+ region-row) region-size-y)
           do (loop for j from (* region-column region-size-x) below (* (1+ region-column) region-size-x)
-                   do (if (and (= (length (nth i board)) 1)
-                                (= (nth 0 (nth i board)) value)
-                                (not (and (= i row) (= j column))))
-                          (return-from check-block-placement nil))))
+                   do (
+                    if (and (= (length (nth j (nth i board))) 1)
+                               (not (and (= i row) (= j column)))
+                               (eql (car(nth j (nth i board))) value)
+                                )
+                          (return-from check-block-placement nil)
+                          )))
     t))
 
 
@@ -255,6 +258,8 @@
 
 ;; Ok
 (defun print-board (board value)
+  (write "=====================")
+  (terpri)
   (let* ((size (length board))
          (region-size-x (floor (sqrt size)))
          (region-size-y (truncate size region-size-x)))
@@ -321,20 +326,12 @@
                             )
                           nil
                           )
-                      ; (setf (nth column (nth row copy)) (list i))
-                      ; (let ((result (solve copy sign-board next-row next-column)))
-                      ;   (if result
-                      ;       (return-from solve result)
-                      ;       nil
-                      ;       ))
-                            
                             ))))))
 
 (defun copia (board)
   (loop for row in board
         collect (loop for element in row
                       collect element)))
-
 
 (defun pre-process (board sign-board)
   (let* ((size (length board))
@@ -346,13 +343,14 @@
                 success nil)
           (loop for row below size do
                 (loop for column below size do
-                      (if (eql 1 (length (nth row (nth column copy))))
+                      (if (eql 1 (length (nth column (nth row copy))))
                           (continue))
-                      (loop for k in (nth row (nth column copy)) do
+                      (loop for k in (nth column (nth row copy)) do
                             (if (not (is-placement-valid copy sign-board row column k))
                                 (progn
-                                  (setf (nth row (nth column copy)) (remove k (nth row (nth column copy)))
-                                        success t)))))))
+                                  (setf (nth column (nth row copy)) (remove k (nth column (nth row copy)))
+                                        success t)
+                                        ))))))
     copy))
 
 

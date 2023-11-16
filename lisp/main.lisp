@@ -1,38 +1,19 @@
 (load "funcs.lisp")
+(load "boards.lisp")
 
-;; Ok
-(setq sign-board2
-      '((".>v." "..v>"   ".>^." "..v>"   ".<^." "..v<")
-        ("v<v." "v.^<"   "^>v." "v.^>"   "^<v." "v.v<")
-        ("v<.." "^..<"   "v>.." "^..>"   "v<.." "v..<")
+(defvar example-size 6)
 
-        (".<^." "..v<"   ".<^." "..v<"   ".>^." "..^>")
-        ("^>v." "v.^>"   "^<^." "v.^<"   "^>^." "^.v>")
-        ("v>.." "^..>"   "^<.." "^..<"   "^>.." "v..>")))
+(setq sign-board (if (= example-size 9) sign-board-60 (if (= example-size 6 ) sign-board-23 sign-board-1)))
 
-(setq sign-board
-  '(
-    (".<v." "..^<"    ".<^." "..v<")
-    ("v<.." "^..<"    "^>.." "v..>")
+(setq empty-board (make-board example-size))
+(setq vergleich-preprocessed-board (vergleich-preprocess empty-board sign-board))
 
-    (".>v." "..^>"    ".<^." "..v<")
-    ("v>.." "^..>"    "^>.." "v..>")
-  )
-)
+(print-board vergleich-preprocessed-board nil)
 
-;; OK
-(setq board
-  '(((2) (3) (1) (4))
-    ((1) (4) (3) (2))
-    ((4) (1) (2) (3))
-    ((3) (2) (4) (2 1))
-  )
-)
-; (write (check-signs-row board sign-board 0))
-(setq my-board (make-board 6))
-(setq processed-board (vergleich-preprocess my-board sign-board2))
-(print-board processed-board t)
-(setq solved (solve processed-board sign-board2))
+(setq preprocessed-board (pre-process vergleich-preprocessed-board sign-board))
+(print-board preprocessed-board nil)
+
+(setq solved (solve vergleich-preprocessed-board sign-board))
 (if solved
     (print-board solved t)
     (write "No solution found"))
