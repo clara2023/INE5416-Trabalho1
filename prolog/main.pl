@@ -1,212 +1,169 @@
-valor(1).
-valor(2).
-valor(3).
-valor(4).
-valor(5).
-valor(6).
-valor(7).
-valor(8).
-valor(9).
+:-  use_module(library(clpfd)).
 
-%4 OPERADORES
-quatroMaior(X) :- valor(X), X =\= 1, X =\= 2, X =\= 3, X =\= 4.
-quatroMenor(X) :- valor(X), X =\= 6, X =\= 7, X =\= 8, X =\= 9.
-umMenorTresMaior(X) :- valor(X), X =\= 9, X =\= 1, X =\= 2, X =\= 3.
-umMaiorTresMenor(X) :- valor(X), X =\= 1, X =\= 7, X =\= 8, X =\= 9.
-doisMaiorDoisMenor(X) :- X =\= 1, X =\= 2, X =\= 8, X =\= 9.
+%Acima | Direita | Abaixo | Esquerda
+%Menor: -
+%Maior: +
+%Sem comparador: /
+comparadoresPorCelula(Comparadores) :-
+    Comparadores = [
+    [['/', '+', '+', '/'], ['/', '+', '-', '-'], ['/', '/', '-', '-'], ['/', '-', '+', '/'], ['/', '+', '+', '+'], ['/', '/', '+', '-'], ['/', '-', '-', '/'], ['/', '+', '+', '+'], ['/', '/', '-', '-']],
+    [['-', '-', '-', '/'], ['+', '-', '+', '+'], ['+', '/', '+', '+'], ['-', '-', '-', '/'], ['-', '+', '-', '+'], ['-', '/', '-', '-'], ['+', '+', '+', '/'], ['-', '-', '+', '-'], ['+', '/', '+', '+']],
+    [['+', '+', '/', '/'], ['-', '+', '/', '-'], ['-', '/', '/', '-'], ['+', '+', '/', '/'], ['+', '-', '/', '-'], ['+', '/', '/', '+'], ['-', '+', '/', '/'], ['-', '-', '/', '-'], ['-', '/', '/', '+']],
+    [['/', '-', '-', '/'], ['/', '-', '-', '+'], ['/', '/', '-', '+'], ['/', '+', '+', '/'], ['/', '-', '+', '-'], ['/', '/', '+', '+'], ['/', '+', '+', '/'], ['/', '+', '-', '-'], ['/', '/', '+', '-']],
+    [['+', '-', '+', '/'], ['+', '-', '+', '+'], ['+', '/', '+', '+'], ['-', '-', '+', '/'], ['-', '-', '+', '+'], ['-', '/', '+', '+'], ['-', '-', '-', '/'], ['+', '+', '-', '+'], ['-', '/', '-', '-']],
+    [['-', '-', '/', '/'], ['-', '+', '/', '+'], ['-', '/', '/', '-'], ['-', '-', '/', '/'], ['-', '-', '/', '+'], ['-', '/', '/', '+'], ['+', '-', '/', '/'], ['+', '+', '/', '+'], ['+', '/', '/', '-']],
+    [['/', '+', '+', '/'], ['/', '-', '+', '-'], ['/', '/', '+', '+'], ['/', '+', '+', '/'], ['/', '-', '-', '-'], ['/', '/', '-', '+'], ['/', '+', '+', '/'], ['/', '+', '+', '-'], ['/', '/', '-', '-']],
+    [['-', '+', '-', '/'], ['-', '-', '-', '-'], ['-', '/', '-', '+'], ['-', '-', '+', '/'], ['+', '-', '+', '+'], ['+', '/', '+', '+'], ['-', '+', '+', '/'], ['-', '-', '+', '-'], ['+', '/', '-', '+']],
+    [['+', '-', '/', '/'], ['+', '+', '/', '+'], ['+', '/', '/', '-'], ['-', '+', '/', '/'], ['-', '+', '/', '-'], ['-', '/', '/', '-'], ['-', '+', '/', '/'], ['-', '-', '/', '-'], ['+', '/', '/', '+']]
+    ].
 
-%3 OPERADORES
-tresMaior(X) :- valor(X), X =\= 1, X =\= 2, X =\= 3.
-tresMenor(X) :- valor(X), X =\= 7, X =\= 8, X =\= 9.
-umMenorDoisMaior(X) :- valor(X), X =\= 9, X =\= 1, X =\= 2.
-umMaiorDoisMenor(X) :- valor(X), X =\= 1, X =\= 8, X =\= 9.
 
-%2 OPERADORES
-doisMaior(X) :- valor(X), X =\= 1, X =\= 2.
-doisMenor(X) :- valor(X), X =\= 8, X =\= 9.
-umMenorUmMaior(X) :- valor(X), X =\= 9, X =\= 1.
+%ACHAR O I-ÉSIMO DA LISTA
+%O 0-ésimo item da lista é a cabeça da lista, se ela tiver um ou mais itens.
+%O I-ésimo item da lista é o (I-1)-ésimo item da cauda da lista.
+%Armazena a resposta em H/X
+nthLista(0, [H|_], H).
+nthLista(I, [_|T], X) :- I2 is I - 1, nthLista(I2, T, X).
 
-maior(X,Y) :- X > Y.
-menor(X,Y) :- X < Y.
 
-todosDiferentes([]).
-todosDiferentes([H|T]) :- not(member(H,T)), todosDiferentes(T).
+%ACHAR O I-ÉSIMO DA MATRIZ
+%Primeiro encontra a lista X em Matriz
+%Depois encontra o valor Y na lista
+%Armazena a resposta em Z
+nthMatriz(X, Y, Matriz, Z) :- nthLista(X, Matriz, W), nthLista(Y, W, Z).
 
-completa([A, B, C, D, E, F, G, H, I]) :-
-    valor(A), valor(B), valor(C), valor(D), valor(E), valor(F), valor(G), valor(H), valor(I),
-    todosDiferentes([A, B, C, D, E, F, G, H, I]).
 
-solucao(Tabuleiro) :-
-    Tabuleiro = [
-        [X11, X12, X13, X14, X15, X16, X17, X18, X19],
-        [X21, X22, X23, X24, X25, X26, X27, X28, X29],
-        [X31, X32, X33, X34, X35, X36, X37, X38, X39],
-        [X41, X42, X43, X44, X45, X46, X47, X48, X49],
-        [X51, X52, X53, X54, X55, X56, X57, X58, X59],
-        [X61, X62, X63, X64, X65, X66, X67, X68, X69],
-        [X71, X72, X73, X74, X75, X76, X77, X78, X79],
-        [X81, X82, X83, X84, X85, X86, X87, X88, X89],
-        [X91, X92, X93, X94, X95, X96, X97, X98, X99]
-    ],
+%ENCONTRA O ÚLTIMO ELEMENTO
+%Se a lista é formada por um único elemento, então ele é o último elemento.
+%Se a lista possui mais de um elemento, o último elemento é o último da cauda
+ultimo([X], X).
+ultimo([H,H2|T], X) :- ultimo([H2|T],X).
 
-    %LINHAS
-    completa([X11, X12, X13, X14, X15, X16, X17, X18, X19]),
-    completa([X21, X22, X23, X24, X25, X26, X27, X28, X29]),
-    completa([X31, X32, X33, X34, X35, X36, X37, X38, X39]),
-    completa([X41, X42, X43, X44, X45, X46, X47, X48, X49]),
-    completa([X51, X52, X53, X54, X55, X56, X57, X58, X59]),
-    completa([X61, X62, X63, X64, X65, X66, X67, X68, X69]),
-    completa([X71, X72, X73, X74, X75, X76, X77, X78, X79]),
-    completa([X81, X82, X83, X84, X85, X86, X87, X88, X89]),
-    completa([X91, X92, X93, X94, X95, X96, X97, X98, X99]),
 
-    %COLUNAS
-    completa([X11, X21, X31, X41, X51, X61, X71, X81, X91]),
-    completa([X12, X22, X32, X42, X52, X62, X72, X82, X92]),
-    completa([X13, X23, X33, X43, X53, X63, X73, X83, X93]),
-    completa([X14, X24, X34, X44, X54, X64, X74, X84, X94]),
-    completa([X15, X25, X35, X45, X55, X65, X75, X85, X95]),
-    completa([X16, X26, X36, X46, X56, X66, X76, X86, X96]),
-    completa([X17, X27, X37, X47, X57, X67, X77, X87, X97]),
-    completa([X18, X28, X38, X48, X58, X68, X78, X88, X98]),
-    completa([X19, X29, X39, X49, X59, X69, X79, X89, X99]),
+%REMOVER ELEMENTO DA LISTA
+%Se tento remover um item X de uma lista vazia, retorno a lista vazia.
+%Se X é a cabeça da minha lista, ignoro ela, e retorno a lista resultante da remoção de X da cauda da lista.
+%Se X não é a cabeça da minha lista, retorno ela e a lista resultante da remoção de X da cauda da lista.
+remover(X,[],[]).
+remover(X,[X|T],T2) :- remover(X, T, T2).
+remover(X,[H|T],[H|T2]) :- X \== H, remover(X, T, T2).
 
-    %AREAS
-    completa([X11, X12, X13, X21, X22, X23, X31, X32, X33]),
-    completa([X14, X15, X16, X24, X25, X26, X34, X35, X36]),
-    completa([X17, X18, X19, X27, X28, X29, X37, X38, X39]),
-    completa([X41, X42, X43, X51, X52, X53, X61, X62, X63]),
-    completa([X44, X45, X46, X54, X55, X56, X64, X65, X66]),
-    completa([X47, X48, X49, X57, X58, X59, X67, X68, X69]),
-    completa([X71, X72, X73, X81, X82, X83, X91, X92, X93]),
-    completa([X74, X75, X76, X84, X85, X86, X94, X95, X96]),
-    completa([X77, X78, X79, X87, X88, X89, X97, X98, X99]),
 
-    %OPERADORES
-    %Regiao 1
-    menor(X11,X12),
-    maior(X11,X21),
-    menor(X12,X13),
-    maior(X12,X22),
-    maior(X13,X23),
-    menor(X21,X22),
-    menor(X21,X31),
-    menor(X22,X23),
-    maior(X22,X32),
-    menor(X23,X33),
-    maior(X31,X32),
-    menor(X32,X33),
+%COMPARACOES ENTRE CELULAS
+%Se o comparador for '/' não faz nada
+compara(_, _, _, _, '/').
+compara(Numero1, Tabuleiro, X, Y, '+') :- nthMatriz(X, Y, Tabuleiro, Numero2), Numero1 > Numero2.
+compara(Numero1, Tabuleiro, X, Y, '-') :- nthMatriz(X, Y, Tabuleiro, Numero2), Numero1 < Numero2.
 
-    %Regiao 2
-    menor(X14,X15),
-    menor(X14,X24),
-    menor(X15,X16),
-    menor(X15,X25),
-    maior(X16,X26),
-    maior(X24,X25),
-    maior(X24,X34),
-    maior(X25,X26),
-    maior(X25,X35),
-    menor(X26,X36),
-    maior(X34,X35),
-    menor(X35,X36),
+%GERA LISTA DE VALORES POR CÉLULA
+%Retorna os valores para a célula em X,Y em PossibilidadesCelula
+preprocess(X, Y, Comparacoes, PossibilidadesCelula) :-
+    %Encontra os comparadores da célula na linha X coluna Y
+    nthMatriz(X, Y, Comparacoes, ComparadoresCelula),
 
-    %Regiao 3
-    menor(X17,X18),
-    menor(X17,X27),
-    menor(X18,X19),
-    maior(X18,X28),
-    maior(X19,X29),
-    maior(X27,X28),
-    menor(X27,X37),
-    menor(X28,X29),
-    menor(X28,X38),
-    maior(X29,X39),
-    maior(X37,X38),
-    menor(X38,X39),
+    %Divide os comparadores por direção
+    %Salva em Comparador[Direção]
+    nthLista(0, ComparadoresCelula, ComparadorAcima),
+    nthLista(1, ComparadoresCelula, ComparadorDireita),
+    nthLista(2, ComparadoresCelula, ComparadorAbaixo),
+    nthLista(3, ComparadoresCelula, ComparadorEsquerda),
 
-    %Regiao 4
-    menor(X41,X42),
-    maior(X41,X51),
-    maior(X42,X43),
-    maior(X42,X52),
-    menor(X43,X53),
-    menor(X51,X52),
-    menor(X51,X61),
-    maior(X52,X53),
-    maior(X52,X62),
-    menor(X53,X63),
-    menor(X61,X62),
-    maior(X62,X63),
+    Possibilidades is [1, 2, 3, 4, 5, 6, 7, 8, 9],
 
-     %Regiao 5
-    menor(X44,X45),
-    menor(X44,X54),
-    maior(X45,X46),
-    maior(X45,X55),
-    menor(X46,X56),
-    maior(X54,X55),
-    maior(X54,X64),
-    menor(X55,X56),
-    maior(X55,X65),
-    maior(X56,X66),
-    menor(X64,X65),
-    maior(X65,X66),
+    reduzPossibilidades(ComparadorAcima, Possibilidades, X, Y, NovasPossibilidades1),
+    reduzPossibilidades(ComparadorDireita, NovasPossibilidades1, X, Y, NovasPossibilidades2),
+    reduzPossibilidades(ComparadorAbaixo, NovasPossibilidades2, X, Y, NovasPossibilidades3),
+    reduzPossibilidades(ComparadorEsquerda, NovasPossibilidades3, X, Y, NovasPossibilidades4).
 
-    %Regiao 6
-    menor(X47,X48),
-    menor(X47,X57),
-    maior(X48,X49),
-    maior(X48,X58),
-    menor(X49,X59),
-    maior(X57,X58),
-    menor(X57,X67),
-    menor(X58,X59),
-    menor(X58,X68),
-    menor(X59,X69),
-    maior(X67,X68),
-    maior(X68,X69),
 
-    %Regiao 9
-    maior(X71,X72),
-    maior(X71,X81),
-    menor(X72,X73),
-    maior(X72,X82),
-    maior(X73,X83),
-    maior(X81,X82),
-    menor(X81,X91),
-    maior(X82,X83),
-    menor(X82,X92),
-    menor(X83,X93),
-    menor(X91,X92),
-    maior(X92,X93),
+%Altera a matriz de valores válidos
+reduzPossibilidades('+', Possibilidades, X, Y, NovasPossibilidades) :-
+    remover(0, Possibilidades, NovaLista).
+reduzPossibilidades('-', Possibilidades, X, Y, NovaMatriz) :-
+    ultimo(Possibilidades, ValorUltimo),
+    remover(ValorUltimo, Possibilidades, NovaLista).
 
-    %Regiao 8
-    maior(X74,X75),
-    menor(X74,X84),
-    menor(X75,X76),
-    menor(X75,X85),
-    menor(X76,X86),
-    menor(X84,X85),
-    maior(X84,X94),
-    maior(X85,X86),
-    maior(X85,X95),
-    maior(X86,X96),
-    menor(X94,X95),
-    maior(X95,X96),
 
-    %Regiao 9
-    maior(X77,X78),
-    maior(X77,X87),
-    menor(X78,X79),
-    maior(X78,X88),
-    maior(X79,X89),
-    maior(X87,X88),
-    maior(X87,X97),
-    maior(X88,X89),
-    menor(X88,X98),
-    maior(X89,X99),
-    menor(X97,X98),
-    maior(X98,X99).
-    
+%Verifica se o valor é válido para a célula na linha X, coluna Y
+valido(Numero, X, Y, Tabuleiro, Comparacoes) :- 
+    %Comparadores da célula na linha X, coluna Y
+    %Busca na matriz de comparadores (Comparacoes)
+    %Salva os comparadores em ComparadoresCelula
+    nthMatriz(X, Y, Comparacoes, ComparadoresCelula),
 
+    %Divide os comparadores por direção
+    %Salva em Comparador[Direção]
+    nthLista(0, ComparadoresCelula, ComparadorAcima),
+    nthLista(1, ComparadoresCelula, ComparadorDireita),
+    nthLista(2, ComparadoresCelula, ComparadorAbaixo),
+    nthLista(3, ComparadoresCelula, ComparadorEsquerda),
+
+    %Define as comparações por direção
+    compara(Numero, Tabuleiro, X-1, Y, ComparadorAcima),
+    compara(Numero, Tabuleiro, X, Y+1, ComparadorDireita),
+    compara(Numero, Tabuleiro, X+1, Y, ComparadorAbaixo),
+    compara(Numero, Tabuleiro, X, Y-1, ComparadorEsquerda).
+
+
+%Percorre todas posições da matriz e define as comparações referentes a cada posição.
+regras(_, _, 9, _).
+regras(Tabuleiro, Comparacoes, X, Y) :- 
+    nthMatriz(X, Y, Tabuleiro, Numero),
+    valido(Numero, X, Y, Tabuleiro, Comparacoes),
+    A is Y + 1,
+    regras(Tabuleiro, Comparacoes, X, A).
+%Caso esteja na última coluna
+regras(Tabuleiro, Comparacoes, X, 9) :- A is X + 1, regras(Tabuleiro, Comparacoes, A, 0).
+
+%Regras do Jogo
+vergleich(Tabuleiro, Comparacoes) :-
+    %9 linhas
+    length(Tabuleiro, 9),
+
+    %9 colunas
+    maplist(same_length(Tabuleiro), Tabuleiro),
+
+    %Concatena todos os números do tabuleiro em NumerosTotal
+    append(Tabuleiro, NumerosTotal),
+
+    %O tabuleiro tem apenas números entre 1 e 9
+    %ins(Vars, Domain): Vars-Lista de variáveis; Domain:Valores que Vars pode assumir
+    NumerosTotal ins 1..9,
+
+    %O tabuleiro segue a regra do Tabuleiro vergleich
+    regras(Tabuleiro, Comparacoes, 0, 0),
+
+    %Sem repetição de valores por linha
+    maplist(all_distinct, Tabuleiro),
+
+    %Inverte as linhas e colunas
+    transpose(Tabuleiro, Columns),
+
+    %Sem repetição de valores por coluna (agora linha)
+    maplist(all_distinct, Columns), 
+
+    %Nomeia todas as linhas da Matriz
+    Tabuleiro = [Linha1, Linha2, Linha3, Linha4, Linha5, Linha6, Linha7, Linha8, Linha9],
+
+
+    %A partir das linhas nomeadas, divide em 3 regioes de 3 linhas cada
+    %Sem repetição de valores por regiao
+    regiao(Linha1, Linha2, Linha3),
+    regiao(Linha4, Linha5, Linha6),
+    regiao(Linha7, Linha8, Linha9).
+
+
+%Recebe 3 linhas, cada uma com tamanhos iguais entre si que podem ser 9, 6, 3 ou 0
+%Vai andando em blocos de 3 por essas linhas até chegar ao final.
+%Pega os 3 primeiros itens de cada linha e diz que todos os 9 itens precisam ser diferentes.
+%Ao final repete o processo para a calda ou o que sobrou da lista.
+regiao([], [], []).
+regiao([N1,N2,N3|Ns1], [N4,N5,N6|Ns2], [N7,N8,N9|Ns3]) :-
+    all_distinct([N1,N2,N3,N4,N5,N6,N7,N8,N9]),
+    regiao(Ns1, Ns2, Ns3).
+
+
+solve :- comparadoresPorCelula(Comparacoes),
+    vergleich(P, Comparacoes),
+    maplist(label, P), maplist(portray_clause, P),
+    halt.
