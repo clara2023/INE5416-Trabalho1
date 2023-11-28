@@ -1,4 +1,4 @@
-:-  use_module(library(clpfd)).
+:-  use_module(library(clpfd)), initialization(main).
 
 %Acima | Direita | Abaixo | Esquerda
 %Menor: -
@@ -33,63 +33,19 @@ nthLista(I, [_|T], X) :- I2 is I - 1, nthLista(I2, T, X).
 nthMatriz(X, Y, Matriz, Z) :- nthLista(X, Matriz, W), nthLista(Y, W, Z).
 
 
-%ENCONTRA O ÚLTIMO ELEMENTO
-%Se a lista é formada por um único elemento, então ele é o último elemento.
-%Se a lista possui mais de um elemento, o último elemento é o último da cauda
-ultimo([X], X).
-ultimo([H,H2|T], X) :- ultimo([H2|T],X).
-
-
-%REMOVER ELEMENTO DA LISTA
-%Se tento remover um item X de uma lista vazia, retorno a lista vazia.
-%Se X é a cabeça da minha lista, ignoro ela, e retorno a lista resultante da remoção de X da cauda da lista.
-%Se X não é a cabeça da minha lista, retorno ela e a lista resultante da remoção de X da cauda da lista.
-remover(X,[],[]).
-remover(X,[X|T],T2) :- remover(X, T, T2).
-remover(X,[H|T],[H|T2]) :- X \== H, remover(X, T, T2).
-
-
 %COMPARACOES ENTRE CELULAS
 %Se o comparador for '/' não faz nada
 compara(_, _, _, _, '/').
 compara(Numero1, Tabuleiro, X, Y, '+') :- nthMatriz(X, Y, Tabuleiro, Numero2), Numero1 > Numero2.
 compara(Numero1, Tabuleiro, X, Y, '-') :- nthMatriz(X, Y, Tabuleiro, Numero2), Numero1 < Numero2.
 
-%GERA LISTA DE VALORES POR CÉLULA
-%Retorna os valores para a célula em X,Y em PossibilidadesCelula
-preprocess(X, Y, Comparacoes, PossibilidadesCelula) :-
-    %Encontra os comparadores da célula na linha X coluna Y
-    nthMatriz(X, Y, Comparacoes, ComparadoresCelula),
-
-    %Divide os comparadores por direção
-    %Salva em Comparador[Direção]
-    nthLista(0, ComparadoresCelula, ComparadorAcima),
-    nthLista(1, ComparadoresCelula, ComparadorDireita),
-    nthLista(2, ComparadoresCelula, ComparadorAbaixo),
-    nthLista(3, ComparadoresCelula, ComparadorEsquerda),
-
-    Possibilidades is [1, 2, 3, 4, 5, 6, 7, 8, 9],
-
-    reduzPossibilidades(ComparadorAcima, Possibilidades, X, Y, NovasPossibilidades1),
-    reduzPossibilidades(ComparadorDireita, NovasPossibilidades1, X, Y, NovasPossibilidades2),
-    reduzPossibilidades(ComparadorAbaixo, NovasPossibilidades2, X, Y, NovasPossibilidades3),
-    reduzPossibilidades(ComparadorEsquerda, NovasPossibilidades3, X, Y, NovasPossibilidades4).
-
-
-%Altera a matriz de valores válidos
-reduzPossibilidades('+', Possibilidades, X, Y, NovasPossibilidades) :-
-    remover(0, Possibilidades, NovaLista).
-reduzPossibilidades('-', Possibilidades, X, Y, NovaMatriz) :-
-    ultimo(Possibilidades, ValorUltimo),
-    remover(ValorUltimo, Possibilidades, NovaLista).
-
 
 %Verifica se o valor é válido para a célula na linha X, coluna Y
-valido(Numero, X, Y, Tabuleiro, Comparacoes) :- 
+valido(Numero, X, Y, Tabuleiro, Comparadores) :- 
     %Comparadores da célula na linha X, coluna Y
-    %Busca na matriz de comparadores (Comparacoes)
+    %Busca na matriz de comparadores (Comparadores)
     %Salva os comparadores em ComparadoresCelula
-    nthMatriz(X, Y, Comparacoes, ComparadoresCelula),
+    nthMatriz(X, Y, Comparadores, ComparadoresCelula),
 
     %Divide os comparadores por direção
     %Salva em Comparador[Direção]
@@ -110,10 +66,9 @@ regras(_, _, 9, _).
 regras(Tabuleiro, Comparacoes, X, Y) :- 
     nthMatriz(X, Y, Tabuleiro, Numero),
     valido(Numero, X, Y, Tabuleiro, Comparacoes),
-    A is Y + 1,
-    regras(Tabuleiro, Comparacoes, X, A).
+    regras(Tabuleiro, Comparacoes, X, Y + 1).
 %Caso esteja na última coluna
-regras(Tabuleiro, Comparacoes, X, 9) :- A is X + 1, regras(Tabuleiro, Comparacoes, A, 0).
+regras(Tabuleiro, Comparacoes, X, 9) :- regras(Tabuleiro, Comparacoes, X + 1, 0).
 
 %Regras do Jogo
 vergleich(Tabuleiro, Comparacoes) :-
@@ -163,7 +118,7 @@ regiao([N1,N2,N3|Ns1], [N4,N5,N6|Ns2], [N7,N8,N9|Ns3]) :-
     regiao(Ns1, Ns2, Ns3).
 
 
-solve :- comparadoresPorCelula(Comparacoes),
+main :- comparadoresPorCelula(Comparacoes),
     vergleich(P, Comparacoes),
     maplist(label, P), maplist(portray_clause, P),
     halt.
