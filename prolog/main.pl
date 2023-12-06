@@ -146,33 +146,3 @@ main :- comparadoresPorCelula(Sign_board),
     %Formata Table
     maplist(portray_clause, Table),
     halt.
-
-
-/* TENTAR IMPLEMENTAR*/
-/*---------------------------------------------------*/
-%Checa se todos os vizinhos estão ok com os sinais
-% sign_valid(Tabuleiro, Linha, Coluna)
-
-% regiao([], [], [], _).
-% regiao([N1,N2,N3|Ns1], [N4,N5,N6|Ns2], [N7,N8,N9|Ns3], Linhas) :-
-%     length([N1,N2,N3,N4,N5,N6,N7,N8,N9], Comprimento),
-%     all_distinct([N1,N2,N3,N4,N5,N6,N7,N8,N9]),
-%     LinhasRestantes is Linhas - 1,
-%     regiao(Ns1, Ns2, Ns3, LinhasRestantes),
-%     Comprimento =:= size.
-
-% region_size_x is integer(sqrt(size)),
-% region_size_y is size // region_size_x,
-
-%A partir das linhas nomeadas, divide em 3 regioes de 3 linhas cada
-%Sem repetição de valores por regiao
-% regiao(Linha1, Linha2, Linha3, region_size_x),
-% regiao(Linha4, Linha5, Linha6, region_size_x),
-% regiao(Linha7, Linha8, Linha9, region_size_x),
-%regiao(Linha1, Linha2, Linha3),
-%regiao(Linha4, Linha5, Linha6),
-%regiao(Linha7, Linha8, Linha9).
-
-    % region_size_x is integer(sqrt(size)),
-    % region_size_y is size // region_size_x,
-/*---------------------------------------------------*/
