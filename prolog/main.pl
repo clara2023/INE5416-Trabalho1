@@ -26,8 +26,8 @@ rules(Board, Sign_board, Size) :-
     %Define o número de colunas de Board
     maplist(same_length(Board), Board),
 
-    %Define que os valores do tabuleiro (TodosOsNumeros) assumem números de 1-9
-    append(Board, TodosOsNumeros),
+    %Transforma a matriz em uma lista unidimensional para facilitar a aplicação de restrições a todas as células da matriz de uma vez
+    flatten(Board, TodosOsNumeros),
     %ins(Vars, Domain): Vars:Lista de variáveis; Domain:Valores que Vars pode assumir
     TodosOsNumeros ins 1..Size,
 
