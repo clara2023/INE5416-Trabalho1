@@ -141,7 +141,7 @@ main :- comparadoresPorCelula(Sign_board),
     size(X),    
     %Resolve o Jogo
     rules(Table, Sign_board, X),
-    %Rotula todos os elementos de P
+    %Rotula todos os elementos de Table
     maplist(label, Table),
     %Formata Table
     maplist(portray_clause, Table),
